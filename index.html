@@ -477,10 +477,27 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script>
-const SHEET_ID = '1-PqdNknNE3pZo8rc947TEG83pfc4cgxCQ2rs75QcM0s';
+const SHEET_ID  = '1-PqdNknNE3pZo8rc947TEG83pfc4cgxCQ2rs75QcM0s';
 const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=0`;
-const CSV_URL  = `https://corsproxy.io/?url=${encodeURIComponent(SHEET_URL)}`;
-const TARGET   = 2_000_000_000;
+const PROXIES   = [
+  u => `https://corsproxy.io/?url=${encodeURIComponent(u)}`,
+  u => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
+  u => `https://thingproxy.freeboard.io/fetch/${u}`,
+];
+const TARGET = 2_000_000_000;
+
+async function fetchCSV() {
+  for (const proxy of PROXIES) {
+    try {
+      const r = await fetch(proxy(SHEET_URL), { signal: AbortSignal.timeout(8000) });
+      if (r.ok) {
+        const text = await r.text();
+        if (text.includes('Datum')) return text;
+      }
+    } catch(e) { /* probeer volgende proxy */ }
+  }
+  throw new Error('Alle proxies mislukt');
+}
 
 const MONTHS_FULL  = ['januari','februari','maart','april','mei','juni','juli','augustus','september','oktober','november','december'];
 const MONTHS_SHORT = ['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'];
@@ -516,9 +533,7 @@ let chart = null;
 
 async function load() {
   try {
-    const r = await fetch(CSV_URL);
-    if (!r.ok) throw new Error('fetch failed');
-    const csv = await r.text();
+    const csv = await fetchCSV();
 
     const lines = csv.trim().split('\n');
     const totalRows = lines.length - 1;
