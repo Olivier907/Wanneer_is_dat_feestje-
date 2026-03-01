@@ -478,7 +478,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script>
 const SHEET_ID = '1-PqdNknNE3pZo8rc947TEG83pfc4cgxCQ2rs75QcM0s';
-const CSV_URL  = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=0`;
+const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=0`;
+const CSV_URL  = `https://corsproxy.io/?url=${encodeURIComponent(SHEET_URL)}`;
 const TARGET   = 2_000_000_000;
 
 const MONTHS_FULL  = ['januari','februari','maart','april','mei','juni','juli','augustus','september','oktober','november','december'];
