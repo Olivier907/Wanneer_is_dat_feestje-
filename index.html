@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wanneer is dat feestje?</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,700&family=Source+Sans+3:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:         #f0f3f7;
+    --surface:    #ffffff;
+    --border:     #d6dde8;
+    --navy:       #1a3a5c;
+    --navy-dim:   #1a3a5c12;
+    --navy-mid:   #1a3a5c35;
+    --orange:     #f5a623;
+    --orange-dim: #f5a62318;
+    --orange-mid: #f5a62360;
+    --text:       #1a2b3c;
+    --muted:      #6e8aa3;
+    --success:    #1a7a4a;
+    --warn:       #c97000;
+    --danger:     #c0392b;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Source Sans 3', sans-serif;
+    font-size: 17px;
+    line-height: 1.6;
+    min-height: 100vh;
+    padding: 0;
+  }
+
+  /* ── Top bar ── */
+  .topbar {
+    background: var(--navy);
+    color: white;
+    padding: 0 40px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .topbar-logo img {
+    height: 36px;
+    width: auto;
+    display: block;
+    filter: brightness(0) invert(1);
+  }
+
+  .topbar-tag {
+    font-size: 12px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.55);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .live-dot {
+    width: 7px; height: 7px;
+    background: var(--orange);
+    border-radius: 50%;
+    animation: pulse 2s ease infinite;
+    flex-shrink: 0;
+    display: inline-block;
+  }
+
+  @keyframes pulse {
+    0%,100% { opacity:1; transform:scale(1); }
+    50%      { opacity:.4; transform:scale(.75); }
+  }
+
+  /* ── Orange accent bar ── */
+  .accent-bar {
+    height: 4px;
+    background: linear-gradient(90deg, var(--orange), #ffd27a);
+  }
+
+  /* ── Main layout ── */
+  .page {
+    max-width: 1020px;
+    margin: 0 auto;
+    padding: 48px 24px 80px;
+  }
+
+  /* ── Header ── */
+  header {
+    margin-bottom: 40px;
+    animation: fadeUp .6s ease both;
+  }
+
+  .eyebrow {
+    font-size: 12px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--orange);
+    margin-bottom: 10px;
+  }
+
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2.2rem, 5vw, 3.4rem);
+    color: var(--navy);
+    line-height: 1.12;
+    font-weight: 700;
+  }
+
+  h1 em { font-style: italic; color: var(--orange); }
+
+  .subtitle {
+    margin-top: 10px;
+    color: var(--muted);
+    font-size: 14px;
+    letter-spacing: 0.02em;
+  }
+
+  .divider {
+    width: 44px; height: 3px;
+    background: var(--orange);
+    border-radius: 2px;
+    margin: 14px 0;
+  }
+
+  /* ── Loading ── */
+  .loading-overlay {
+    position: fixed; inset: 0;
+    background: var(--bg);
+    z-index: 200;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    transition: opacity .4s ease;
+  }
+  .loading-overlay.hidden { opacity: 0; pointer-events: none; }
+
+  .loader-ring {
+    width: 42px; height: 42px;
+    border: 3px solid var(--border);
+    border-top-color: var(--navy);
+    border-radius: 50%;
+    animation: spin .8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .loader-text {
+    font-size: 12px;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  /* ── Error ── */
+  .error-box {
+    background: #c0392b0f;
+    border: 1px solid #c0392b44;
+    border-radius: 10px;
+    padding: 16px 20px;
+    color: var(--danger);
+    font-size: 14px;
+    display: none;
+    margin-bottom: 24px;
+  }
+
+  /* ── Cards shared ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px 28px 24px;
+    box-shadow: 0 2px 10px var(--navy-dim);
+    transition: box-shadow .2s, transform .2s, border-color .2s;
+    animation: fadeUp .6s ease both;
+  }
+  .card:hover {
+    box-shadow: 0 6px 20px var(--navy-dim);
+    transform: translateY(-2px);
+    border-color: var(--navy-mid);
+  }
+
+  .card-label {
+    font-size: 12px;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+
+  .card-value {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.1rem;
+    color: var(--navy);
+    line-height: 1.1;
+  }
+
+  .card-sub {
+    font-size: 13.5px;
+    color: var(--muted);
+    margin-top: 6px;
+  }
+
+  /* ── Progress section ── */
+  .progress-card {
+    margin-bottom: 20px;
+    animation-delay: .1s;
+  }
+
+  .progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .amount-big {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2.1rem, 4.5vw, 3.1rem);
+    color: var(--navy);
+    line-height: 1;
+  }
+
+  .target-block { text-align: right; }
+  .target-block .label { font-size: 12px; text-transform: uppercase; letter-spacing: .14em; color: var(--muted); }
+  .target-block .val { font-family: 'Playfair Display', serif; font-size: 1.5rem; color: var(--navy); }
+
+  .progress-bar-outer {
+    height: 10px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 99px;
+    overflow: hidden;
+    margin-bottom: 10px;
+  }
+
+  .progress-bar-inner {
+    height: 100%;
+    background: linear-gradient(90deg, var(--navy) 0%, #2e6da8 100%);
+    border-radius: 99px;
+    width: 0%;
+    transition: width 1.6s cubic-bezier(.4,0,.2,1);
+  }
+
+  .progress-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13.5px;
+    color: var(--muted);
+  }
+  .progress-meta .pct { color: var(--navy); font-weight: 600; }
+
+  /* ── Section header ── */
+  .section-header {
+    font-size: 12px;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    color: var(--navy);
+    font-weight: 600;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--orange);
+    display: inline-block;
+    margin-bottom: 20px;
+  }
+
+  /* ── Prognose tabel ── */
+  .prognose-card {
+    margin-bottom: 20px;
+    animation-delay: .15s;
+  }
+
+  .prognose-row {
+    display: grid;
+    grid-template-columns: 1.3fr 1fr .8fr 1.3fr;
+    gap: 8px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 15px;
+    align-items: center;
+  }
+  .prognose-row:last-child { border-bottom: none; }
+  .prognose-row.header {
+    font-size: 11.5px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding-bottom: 8px;
+  }
+
+  .date-val {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.05rem;
+    color: var(--text);
+  }
+
+  .badge {
+    display: inline-block;
+    padding: 2px 9px;
+    border-radius: 99px;
+    font-size: 11px;
+    font-family: 'Source Sans 3', sans-serif;
+    margin-left: 5px;
+    vertical-align: middle;
+  }
+  .badge-green { background: #1a7a4a14; color: var(--success); border: 1px solid #1a7a4a44; }
+  .badge-warn  { background: #c9700014; color: var(--warn);    border: 1px solid #c9700044; }
+  .badge-red   { background: #c0392b14; color: var(--danger);  border: 1px solid #c0392b44; }
+
+  /* ── Stats grid ── */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  /* ── Chart ── */
+  .chart-card {
+    margin-bottom: 20px;
+    animation-delay: .3s;
+  }
+  canvas { width: 100% !important; }
+
+  /* ── Footer ── */
+  footer {
+    text-align: center;
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 48px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+  }
+
+  @keyframes fadeUp {
+    from { opacity:0; transform:translateY(18px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+
+  @media (max-width: 620px) {
+    .topbar { padding: 0 16px; }
+    .prognose-row { grid-template-columns: 1fr 1fr; font-size: 13px; }
+    .prognose-row.header { display: none; }
+    .progress-header { flex-direction: column; align-items: flex-start; }
+    .target-block { text-align: left; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Loading -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loader-ring"></div>
+  <div class="loader-text">Data ophalen uit Google Sheets…</div>
+</div>
+
+<!-- Top navigation bar -->
+<div class="topbar">
+  <div class="topbar-logo">
+    <img src="https://www.collincrowdfund.nl/wp-content/uploads/2020/03/logo_meerdangeldalleen-01.svg" alt="Collin Crowdfund">
+  </div>
+  <div class="topbar-tag"><span class="live-dot"></span>Live Funding Tracker</div>
+</div>
+<div class="accent-bar"></div>
+
+<div class="page">
+
+  <header>
+    <div class="eyebrow">Funding dashboard</div>
+    <h1>Wanneer is<br><em>dat feestje?</em></h1>
+    <div class="divider"></div>
+    <div class="subtitle">
+      Startmeting: 6 januari 2026 &nbsp;·&nbsp;
+      Bijgewerkt: <span id="lastUpdate">laden…</span> &nbsp;·&nbsp;
+      <span id="metingCount">—</span> metingen
+    </div>
+  </header>
+
+  <div class="error-box" id="errorBox">
+    ⚠️ Kon data niet ophalen uit Google Sheets. Controleer of de sheet publiek staat.
+  </div>
+
+  <!-- 1. Progress -->
+  <div class="card progress-card">
+    <div class="progress-header">
+      <div>
+        <div class="card-label">Totaal geïnvesteerd</div>
+        <div class="amount-big" id="currentAmount">—</div>
+      </div>
+      <div class="target-block">
+        <div class="label">Target</div>
+        <div class="val">€ 2.000.000.000</div>
+      </div>
+    </div>
+    <div class="progress-bar-outer">
+      <div class="progress-bar-inner" id="progressBar"></div>
+    </div>
+    <div class="progress-meta">
+      <span class="pct" id="progressPct">—</span>
+      <span>Nog te funden: <strong id="remaining">—</strong></span>
+    </div>
+  </div>
+
+  <!-- 2. Prognose — direct onder progress -->
+  <div class="card prognose-card">
+    <div class="section-header">Prognose — wanneer bereiken we het target?</div>
+    <div class="prognose-row header">
+      <div>Methode</div>
+      <div>Dag gemiddelde</div>
+      <div>Dagen te gaan</div>
+      <div>Verwachte datum</div>
+    </div>
+    <div class="prognose-row">
+      <div>Totaal gemiddelde</div>
+      <div style="color:var(--muted)" id="p1avg">—</div>
+      <div style="color:var(--muted)" id="p1days">—</div>
+      <div class="date-val" id="p1date">—</div>
+    </div>
+    <div class="prognose-row">
+      <div>MA 30 dagen</div>
+      <div style="color:var(--muted)" id="p2avg">—</div>
+      <div style="color:var(--muted)" id="p2days">—</div>
+      <div class="date-val" id="p2date">—</div>
+    </div>
+    <div class="prognose-row">
+      <div>MA 7 dagen</div>
+      <div style="color:var(--muted)" id="p3avg">—</div>
+      <div style="color:var(--muted)" id="p3days">—</div>
+      <div class="date-val" id="p3date">—</div>
+    </div>
+    <div class="prognose-row">
+      <div style="color:var(--orange); font-weight:600">Jeroen Ter Huurne</div>
+      <div style="color:var(--muted)">—</div>
+      <div style="color:var(--muted)">—</div>
+      <div class="date-val">23 april 2027 <span class="badge badge-green">optimistisch</span></div>
+    </div>
+  </div>
+
+  <!-- 3. Stats kaarten — één positie naar beneden -->
+  <div class="stats-grid">
+    <div class="card" style="animation-delay:.2s">
+      <div class="card-label">Dag gemiddelde (totaal)</div>
+      <div class="card-value" id="avgTotal">—</div>
+      <div class="card-sub" id="avgTotalSub">—</div>
+    </div>
+    <div class="card" style="animation-delay:.25s">
+      <div class="card-label">Voortschrijdend gemiddelde 30 dagen</div>
+      <div class="card-value" id="ma30">—</div>
+      <div class="card-sub" id="ma30Sub">—</div>
+    </div>
+    <div class="card" style="animation-delay:.3s">
+      <div class="card-label">Voortschrijdend gemiddelde 7 dagen</div>
+      <div class="card-value" id="ma7">—</div>
+      <div class="card-sub" id="ma7Sub">—</div>
+    </div>
+  </div>
+
+  <!-- 4. Grafiek — onderaan -->
+  <div class="card chart-card">
+    <div class="section-header">Gefund over tijd</div>
+    <canvas id="fundingChart" height="300"></canvas>
+  </div>
+
+</div>
+
+<footer>
+  <span class="live-dot" style="vertical-align:middle; margin-right:6px;"></span>
+  Data live uit Google Sheets · elke paginalading actueel
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+const SHEET_ID = '1-PqdNknNE3pZo8rc947TEG83pfc4cgxCQ2rs75QcM0s';
+const CSV_URL  = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=0`;
+const TARGET   = 2_000_000_000;
+
+const MONTHS_FULL  = ['januari','februari','maart','april','mei','juni','juli','augustus','september','oktober','november','december'];
+const MONTHS_SHORT = ['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'];
+
+const fmt      = n => '€ ' + Math.round(n).toLocaleString('nl-NL');
+const fmtFull  = d => `${d.getDate()} ${MONTHS_FULL[d.getMonth()]} ${d.getFullYear()}`;
+const fmtShort = d => `${d.getDate()} ${MONTHS_SHORT[d.getMonth()]}`;
+
+function addDays(date, n) {
+  const d = new Date(date);
+  d.setDate(d.getDate() + Math.round(n));
+  return d;
+}
+function parseAmount(s) {
+  return parseFloat(s.replace(/€/g,'').replace(/\s/g,'').replace(/\./g,'').replace(',','.'));
+}
+function parseNLDate(s) {
+  const p = s.trim().split(' ')[0].split('-');
+  return new Date(+p[2], +p[1]-1, +p[0]);
+}
+function prognose(remaining, avg, lastDate) {
+  if (avg <= 0) return { str:'onbekend', n: Infinity };
+  const n = remaining / avg;
+  return { str: fmtFull(addDays(lastDate, n)), n: Math.round(n) };
+}
+function badge(n) {
+  if (n < 600)  return '<span class="badge badge-green">on track</span>';
+  if (n < 1200) return '<span class="badge badge-warn">trager</span>';
+  return '<span class="badge badge-red">zorgelijk</span>';
+}
+
+let chart = null;
+
+async function load() {
+  try {
+    const r = await fetch(CSV_URL);
+    if (!r.ok) throw new Error('fetch failed');
+    const csv = await r.text();
+
+    const lines = csv.trim().split('\n');
+    const totalRows = lines.length - 1;
+
+    const rawRows = [];
+    for (const line of lines.slice(1)) {
+      if (!line.trim()) continue;
+      const cols = line.split(',');
+      if (cols.length < 7) continue;
+      const dateStr = cols[0].replace(/"/g,'').trim();
+      const amtStr  = cols[6].replace(/"/g,'').trim();
+      if (!dateStr || !amtStr) continue;
+      const date = parseNLDate(dateStr);
+      const amt  = parseAmount(amtStr);
+      if (isNaN(amt) || isNaN(date.getTime())) continue;
+      rawRows.push({ date, amt });
+    }
+
+    if (!rawRows.length) throw new Error('no data');
+    rawRows.sort((a,b) => a.date - b.date);
+
+    // Dedupliceer op datum, laatste waarde wint
+    const byDate = {};
+    for (const row of rawRows) byDate[row.date.toDateString()] = row;
+    const data = Object.values(byDate).sort((a,b) => a.date - b.date);
+
+    const first   = data[0];
+    const last    = data[data.length - 1];
+    const current = last.amt;
+    const remaining = TARGET - current;
+    const spanDays  = Math.round((last.date - first.date) / 86400000);
+    const totalInc  = current - first.amt;
+    const avgTotal  = totalInc / spanDays;
+
+    const sl30 = data.slice(-30);
+    const inc30 = sl30[sl30.length-1].amt - sl30[0].amt;
+    const d30   = Math.max(1, Math.round((sl30[sl30.length-1].date - sl30[0].date)/86400000));
+    const ma30  = inc30 / d30;
+
+    const sl7  = data.slice(-7);
+    const inc7  = sl7[sl7.length-1].amt - sl7[0].amt;
+    const d7    = Math.max(1, Math.round((sl7[sl7.length-1].date - sl7[0].date)/86400000));
+    const ma7   = inc7 / d7;
+
+    // DOM updates
+    document.getElementById('lastUpdate').textContent  = fmtFull(last.date);
+    document.getElementById('metingCount').textContent = totalRows;
+
+    const pct = (current / TARGET * 100).toFixed(1);
+    document.getElementById('currentAmount').textContent = fmt(current);
+    document.getElementById('remaining').textContent     = fmt(remaining);
+    document.getElementById('progressPct').textContent   = pct + '%';
+    setTimeout(() => document.getElementById('progressBar').style.width = pct + '%', 300);
+
+    document.getElementById('avgTotal').textContent    = fmt(avgTotal);
+    document.getElementById('avgTotalSub').textContent = `Over ${spanDays} dagen · +${fmt(totalInc)} totaal`;
+    document.getElementById('ma30').textContent        = fmt(ma30);
+    document.getElementById('ma30Sub').textContent     = `Toename laatste 30 metingen: ${fmt(inc30)}`;
+    document.getElementById('ma7').textContent         = fmt(ma7);
+    document.getElementById('ma7Sub').textContent      = `Toename laatste 7 metingen: ${fmt(inc7)}`;
+
+    const p1 = prognose(remaining, avgTotal, last.date);
+    const p2 = prognose(remaining, ma30, last.date);
+    const p3 = prognose(remaining, ma7, last.date);
+
+    document.getElementById('p1avg').textContent  = fmt(avgTotal);
+    document.getElementById('p1days').textContent = p1.n.toLocaleString('nl-NL');
+    document.getElementById('p1date').innerHTML   = p1.str + badge(p1.n);
+
+    document.getElementById('p2avg').textContent  = fmt(ma30);
+    document.getElementById('p2days').textContent = p2.n.toLocaleString('nl-NL');
+    document.getElementById('p2date').innerHTML   = p2.str + badge(p2.n);
+
+    document.getElementById('p3avg').textContent  = fmt(ma7);
+    document.getElementById('p3days').textContent = p3.n.toLocaleString('nl-NL');
+    document.getElementById('p3date').innerHTML   = p3.str + badge(p3.n);
+
+    // Grafiek
+    const labels = data.map(r => fmtShort(r.date));
+    const values = data.map(r => r.amt);
+
+    if (chart) chart.destroy();
+    const ctx = document.getElementById('fundingChart').getContext('2d');
+    const grad = ctx.createLinearGradient(0, 0, 0, 300);
+    grad.addColorStop(0, '#1a3a5c28');
+    grad.addColorStop(1, '#1a3a5c00');
+
+    chart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [{
+          data: values,
+          borderColor: '#1a3a5c',
+          backgroundColor: grad,
+          borderWidth: 2,
+          pointRadius: 0,
+          pointHoverRadius: 5,
+          pointHoverBackgroundColor: '#f5a623',
+          pointHoverBorderColor: '#1a3a5c',
+          fill: true,
+          tension: 0.35,
+        }]
+      },
+      options: {
+        responsive: true,
+        interaction: { intersect: false, mode: 'index' },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: '#1a3a5c',
+            borderColor: '#f5a623',
+            borderWidth: 1,
+            titleColor: '#a8c4dc',
+            bodyColor: '#ffffff',
+            titleFont: { family: 'Source Sans 3', size: 12 },
+            bodyFont: { family: 'Playfair Display', size: 16 },
+            callbacks: { label: c => '€ ' + c.parsed.y.toLocaleString('nl-NL') }
+          }
+        },
+        scales: {
+          x: {
+            ticks: { color: '#6e8aa3', font: { family: 'Source Sans 3', size: 12 }, maxTicksLimit: 10 },
+            grid: { color: '#d6dde820' },
+            border: { color: '#d6dde8' }
+          },
+          y: {
+            ticks: {
+              color: '#6e8aa3',
+              font: { family: 'Source Sans 3', size: 12 },
+              callback: v => '€' + (v/1e9).toFixed(3) + 'B'
+            },
+            grid: { color: '#d6dde840' },
+            border: { color: '#d6dde8' }
+          }
+        }
+      }
+    });
+
+    const ol = document.getElementById('loadingOverlay');
+    ol.classList.add('hidden');
+    setTimeout(() => ol.style.display = 'none', 500);
+
+  } catch(e) {
+    console.error(e);
+    const ol = document.getElementById('loadingOverlay');
+    ol.classList.add('hidden');
+    setTimeout(() => ol.style.display = 'none', 500);
+    document.getElementById('errorBox').style.display = 'block';
+  }
+}
+
+load();
+</script>
+</body>
+</html>
