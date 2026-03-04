@@ -6,581 +6,583 @@
 <title>Wanneer is dat feestje?</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,700&family=Source+Sans+3:wght@300;400;600&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg:         #f0f3f7;
-    --surface:    #ffffff;
-    --border:     #d6dde8;
-    --navy:       #1a3a5c;
-    --navy-dim:   #1a3a5c12;
-    --navy-mid:   #1a3a5c35;
-    --orange:     #f5a623;
-    --orange-dim: #f5a62318;
-    --orange-mid: #f5a62360;
-    --text:       #1a2b3c;
-    --muted:      #6e8aa3;
-    --success:    #1a7a4a;
-    --warn:       #c97000;
-    --danger:     #c0392b;
-  }
+:root {
+--bg:         #f0f3f7;
+--surface:    #ffffff;
+--border:     #d6dde8;
+--navy:       #1a3a5c;
+--navy-dim:   #1a3a5c12;
+--navy-mid:   #1a3a5c35;
+--orange:     #f5a623;
+--orange-dim: #f5a62318;
+--orange-mid: #f5a62360;
+--text:       #1a2b3c;
+--muted:      #6e8aa3;
+--success:    #1a7a4a;
+--warn:       #c97000;
+--danger:     #c0392b;
+}
 
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
 
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Source Sans 3', sans-serif;
-    font-size: 17px;
-    line-height: 1.6;
-    min-height: 100vh;
-    padding: 0;
-  }
+body {
+background: var(--bg);
+color: var(--text);
+font-family: 'Source Sans 3', sans-serif;
+font-size: 17px;
+line-height: 1.6;
+min-height: 100vh;
+padding: 0;
+}
 
-  /* ── Top bar ── */
-  .topbar {
-    background: var(--navy);
-    color: white;
-    padding: 0 40px;
-    height: 64px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
+.topbar {
+background: var(--navy);
+color: white;
+padding: 0 40px;
+height: 64px;
+display: flex;
+align-items: center;
+justify-content: space-between;
+}
 
-  .topbar-logo img {
-    height: 36px;
-    width: auto;
-    display: block;
-    filter: brightness(0) invert(1);
-  }
+.topbar-logo img {
+height: 36px;
+width: auto;
+display: block;
+filter: brightness(0) invert(1);
+}
 
-  .topbar-tag {
-    font-size: 12px;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    color: rgba(255,255,255,0.55);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
+.topbar-tag {
+font-size: 12px;
+letter-spacing: 0.18em;
+text-transform: uppercase;
+color: rgba(255,255,255,0.55);
+display: flex;
+align-items: center;
+gap: 8px;
+}
 
-  .live-dot {
-    width: 7px; height: 7px;
-    background: var(--orange);
-    border-radius: 50%;
-    animation: pulse 2s ease infinite;
-    flex-shrink: 0;
-    display: inline-block;
-  }
+.live-dot {
+width: 7px; height: 7px;
+background: var(--orange);
+border-radius: 50%;
+animation: pulse 2s ease infinite;
+flex-shrink: 0;
+display: inline-block;
+}
 
-  @keyframes pulse {
-    0%,100% { opacity:1; transform:scale(1); }
-    50%      { opacity:.4; transform:scale(.75); }
-  }
+@keyframes pulse {
+0%,100% { opacity:1; transform:scale(1); }
+50%      { opacity:.4; transform:scale(.75); }
+}
 
-  /* ── Orange accent bar ── */
-  .accent-bar {
-    height: 4px;
-    background: linear-gradient(90deg, var(--orange), #ffd27a);
-  }
+.accent-bar {
+height: 4px;
+background: linear-gradient(90deg, var(--orange), #ffd27a);
+}
 
-  /* ── Main layout ── */
-  .page {
-    max-width: 1020px;
-    margin: 0 auto;
-    padding: 48px 24px 80px;
-  }
+.page {
+max-width: 1020px;
+margin: 0 auto;
+padding: 48px 24px 80px;
+}
 
-  /* ── Header ── */
-  header {
-    margin-bottom: 40px;
-    animation: fadeUp .6s ease both;
-  }
+header {
+margin-bottom: 40px;
+animation: fadeUp .6s ease both;
+}
 
-  .eyebrow {
-    font-size: 12px;
-    letter-spacing: 0.22em;
-    text-transform: uppercase;
-    color: var(--orange);
-    margin-bottom: 10px;
-  }
+.eyebrow {
+font-size: 12px;
+letter-spacing: 0.22em;
+text-transform: uppercase;
+color: var(--orange);
+margin-bottom: 10px;
+}
 
-  h1 {
-    font-family: 'Playfair Display', serif;
-    font-size: clamp(2.2rem, 5vw, 3.4rem);
-    color: var(--navy);
-    line-height: 1.12;
-    font-weight: 700;
-  }
+h1 {
+font-family: 'Playfair Display', serif;
+font-size: clamp(2.2rem, 5vw, 3.4rem);
+color: var(--navy);
+line-height: 1.12;
+font-weight: 700;
+}
 
-  h1 em { font-style: italic; color: var(--orange); }
+h1 em { font-style: italic; color: var(--orange); }
 
-  .subtitle {
-    margin-top: 10px;
-    color: var(--muted);
-    font-size: 14px;
-    letter-spacing: 0.02em;
-  }
+.subtitle {
+margin-top: 10px;
+color: var(--muted);
+font-size: 14px;
+letter-spacing: 0.02em;
+}
 
-  .divider {
-    width: 44px; height: 3px;
-    background: var(--orange);
-    border-radius: 2px;
-    margin: 14px 0;
-  }
+.divider {
+width: 44px; height: 3px;
+background: var(--orange);
+border-radius: 2px;
+margin: 14px 0;
+}
 
-  /* ── Loading ── */
-  .loading-overlay {
-    position: fixed; inset: 0;
-    background: var(--bg);
-    z-index: 200;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 16px;
-    transition: opacity .4s ease;
-  }
-  .loading-overlay.hidden { opacity: 0; pointer-events: none; }
+.loading-overlay {
+position: fixed; inset: 0;
+background: var(--bg);
+z-index: 200;
+display: flex;
+flex-direction: column;
+align-items: center;
+justify-content: center;
+gap: 16px;
+transition: opacity .4s ease;
+}
+.loading-overlay.hidden { opacity: 0; pointer-events: none; }
 
-  .loader-ring {
-    width: 42px; height: 42px;
-    border: 3px solid var(--border);
-    border-top-color: var(--navy);
-    border-radius: 50%;
-    animation: spin .8s linear infinite;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
+.loader-ring {
+width: 42px; height: 42px;
+border: 3px solid var(--border);
+border-top-color: var(--navy);
+border-radius: 50%;
+animation: spin .8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
 
-  .loader-text {
-    font-size: 12px;
-    letter-spacing: .18em;
-    text-transform: uppercase;
-    color: var(--muted);
-  }
+.loader-text {
+font-size: 12px;
+letter-spacing: .18em;
+text-transform: uppercase;
+color: var(--muted);
+}
 
-  /* ── Error ── */
-  .error-box {
-    background: #c0392b0f;
-    border: 1px solid #c0392b44;
-    border-radius: 10px;
-    padding: 16px 20px;
-    color: var(--danger);
-    font-size: 14px;
-    display: none;
-    margin-bottom: 24px;
-  }
+.error-box {
+background: #c0392b0f;
+border: 1px solid #c0392b44;
+border-radius: 10px;
+padding: 16px 20px;
+color: var(--danger);
+font-size: 14px;
+display: none;
+margin-bottom: 24px;
+}
 
-  /* ── Cards shared ── */
-  .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 28px 28px 24px;
-    box-shadow: 0 2px 10px var(--navy-dim);
-    transition: box-shadow .2s, transform .2s, border-color .2s;
-    animation: fadeUp .6s ease both;
-  }
-  .card:hover {
-    box-shadow: 0 6px 20px var(--navy-dim);
-    transform: translateY(-2px);
-    border-color: var(--navy-mid);
-  }
+.card {
+background: var(--surface);
+border: 1px solid var(--border);
+border-radius: 12px;
+padding: 28px 28px 24px;
+box-shadow: 0 2px 10px var(--navy-dim);
+transition: box-shadow .2s, transform .2s, border-color .2s;
+animation: fadeUp .6s ease both;
+}
+.card:hover {
+box-shadow: 0 6px 20px var(--navy-dim);
+transform: translateY(-2px);
+border-color: var(--navy-mid);
+}
 
-  .card-label {
-    font-size: 12px;
-    letter-spacing: .16em;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin-bottom: 6px;
-  }
+.card-label {
+font-size: 12px;
+letter-spacing: .16em;
+text-transform: uppercase;
+color: var(--muted);
+margin-bottom: 6px;
+}
 
-  .card-value {
-    font-family: 'Playfair Display', serif;
-    font-size: 2.1rem;
-    color: var(--navy);
-    line-height: 1.1;
-  }
+.card-value {
+font-family: 'Playfair Display', serif;
+font-size: 2.1rem;
+color: var(--navy);
+line-height: 1.1;
+}
 
-  .card-sub {
-    font-size: 13.5px;
-    color: var(--muted);
-    margin-top: 6px;
-  }
+.card-sub {
+font-size: 13.5px;
+color: var(--muted);
+margin-top: 6px;
+}
 
-  /* ── Progress section ── */
-  .progress-card {
-    margin-bottom: 20px;
-    animation-delay: .1s;
-  }
+.progress-card {
+margin-bottom: 20px;
+animation-delay: .1s;
+}
 
-  .progress-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-    margin-bottom: 18px;
-    flex-wrap: wrap;
-    gap: 12px;
-  }
+.progress-header {
+display: flex;
+justify-content: space-between;
+align-items: flex-end;
+margin-bottom: 18px;
+flex-wrap: wrap;
+gap: 12px;
+}
 
-  .amount-big {
-    font-family: 'Playfair Display', serif;
-    font-size: clamp(2.1rem, 4.5vw, 3.1rem);
-    color: var(--navy);
-    line-height: 1;
-  }
+.amount-big {
+font-family: 'Playfair Display', serif;
+font-size: clamp(2.1rem, 4.5vw, 3.1rem);
+color: var(--navy);
+line-height: 1;
+}
 
-  .target-block { text-align: right; }
-  .target-block .label { font-size: 12px; text-transform: uppercase; letter-spacing: .14em; color: var(--muted); }
-  .target-block .val { font-family: 'Playfair Display', serif; font-size: 1.5rem; color: var(--navy); }
+.target-block { text-align: right; }
+.target-block .label { font-size: 12px; text-transform: uppercase; letter-spacing: .14em; color: var(--muted); }
+.target-block .val { font-family: 'Playfair Display', serif; font-size: 1.5rem; color: var(--navy); }
 
-  .progress-bar-outer {
-    height: 10px;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 99px;
-    overflow: hidden;
-    margin-bottom: 10px;
-  }
+.progress-bar-outer {
+height: 10px;
+background: var(--bg);
+border: 1px solid var(--border);
+border-radius: 99px;
+overflow: hidden;
+margin-bottom: 10px;
+}
 
-  .progress-bar-inner {
-    height: 100%;
-    background: linear-gradient(90deg, var(--navy) 0%, #2e6da8 100%);
-    border-radius: 99px;
-    width: 0%;
-    transition: width 1.6s cubic-bezier(.4,0,.2,1);
-  }
+.progress-bar-inner {
+height: 100%;
+background: linear-gradient(90deg, var(--navy) 0%, #2e6da8 100%);
+border-radius: 99px;
+width: 0%;
+transition: width 1.6s cubic-bezier(.4,0,.2,1);
+}
 
-  .progress-meta {
-    display: flex;
-    justify-content: space-between;
-    font-size: 13.5px;
-    color: var(--muted);
-  }
-  .progress-meta .pct { color: var(--navy); font-weight: 600; }
+.progress-meta {
+display: flex;
+justify-content: space-between;
+font-size: 13.5px;
+color: var(--muted);
+}
+.progress-meta .pct { color: var(--navy); font-weight: 600; }
 
-  /* ── Section header ── */
-  .section-header {
-    font-size: 12px;
-    letter-spacing: .2em;
-    text-transform: uppercase;
-    color: var(--navy);
-    font-weight: 600;
-    padding-bottom: 10px;
-    border-bottom: 2px solid var(--orange);
-    display: inline-block;
-    margin-bottom: 20px;
-  }
+.section-header {
+font-size: 12px;
+letter-spacing: .2em;
+text-transform: uppercase;
+color: var(--navy);
+font-weight: 600;
+padding-bottom: 10px;
+border-bottom: 2px solid var(--orange);
+display: inline-block;
+margin-bottom: 20px;
+}
 
-  /* ── Prognose tabel ── */
-  .prognose-card {
-    margin-bottom: 20px;
-    animation-delay: .15s;
-  }
+.prognose-card {
+margin-bottom: 20px;
+animation-delay: .15s;
+}
 
-  .prognose-row {
-    display: grid;
-    grid-template-columns: 1.3fr 1fr .8fr 1.3fr;
-    gap: 8px;
-    padding: 14px 0;
-    border-bottom: 1px solid var(--border);
-    font-size: 15px;
-    align-items: center;
-  }
-  .prognose-row:last-child { border-bottom: none; }
-  .prognose-row.header {
-    font-size: 11.5px;
-    letter-spacing: .1em;
-    text-transform: uppercase;
-    color: var(--muted);
-    padding-bottom: 8px;
-  }
+.prognose-row {
+display: grid;
+grid-template-columns: 1.3fr 1fr .8fr 1.3fr;
+gap: 8px;
+padding: 14px 0;
+border-bottom: 1px solid var(--border);
+font-size: 15px;
+align-items: center;
+}
+.prognose-row:last-child { border-bottom: none; }
+.prognose-row.header {
+font-size: 11.5px;
+letter-spacing: .1em;
+text-transform: uppercase;
+color: var(--muted);
+padding-bottom: 8px;
+}
 
-  .date-val {
-    font-family: 'Playfair Display', serif;
-    font-size: 1.05rem;
-    color: var(--text);
-  }
+.date-val {
+font-family: 'Playfair Display', serif;
+font-size: 1.05rem;
+color: var(--text);
+}
 
-  .badge {
-    display: inline-block;
-    padding: 2px 9px;
-    border-radius: 99px;
-    font-size: 11px;
-    font-family: 'Source Sans 3', sans-serif;
-    margin-left: 5px;
-    vertical-align: middle;
-  }
-  .badge-green { background: #1a7a4a14; color: var(--success); border: 1px solid #1a7a4a44; }
-  .badge-warn  { background: #c9700014; color: var(--warn);    border: 1px solid #c9700044; }
-  .badge-red   { background: #c0392b14; color: var(--danger);  border: 1px solid #c0392b44; }
+.badge {
+display: inline-block;
+padding: 2px 9px;
+border-radius: 99px;
+font-size: 11px;
+font-family: 'Source Sans 3', sans-serif;
+margin-left: 5px;
+vertical-align: middle;
+}
+.badge-green { background: #1a7a4a14; color: var(--success); border: 1px solid #1a7a4a44; }
+.badge-warn  { background: #c9700014; color: var(--warn);    border: 1px solid #c9700044; }
+.badge-red   { background: #c0392b14; color: var(--danger);  border: 1px solid #c0392b44; }
 
-  /* ── Stats grid ── */
-  .stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 16px;
-    margin-bottom: 20px;
-  }
+.stats-grid {
+display: grid;
+grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+gap: 16px;
+margin-bottom: 20px;
+}
 
-  /* ── Chart ── */
-  .chart-card {
-    margin-bottom: 20px;
-    animation-delay: .3s;
-  }
-  canvas { width: 100% !important; }
+.chart-card {
+margin-bottom: 20px;
+animation-delay: .3s;
+}
+canvas { width: 100% !important; }
 
-  /* ── Footer ── */
-  footer {
-    text-align: center;
-    font-size: 12px;
-    color: var(--muted);
-    margin-top: 48px;
-    letter-spacing: .1em;
-    text-transform: uppercase;
-  }
+footer {
+text-align: center;
+font-size: 12px;
+color: var(--muted);
+margin-top: 48px;
+letter-spacing: .1em;
+text-transform: uppercase;
+}
 
-  @keyframes fadeUp {
-    from { opacity:0; transform:translateY(18px); }
-    to   { opacity:1; transform:translateY(0); }
-  }
+@keyframes fadeUp {
+from { opacity:0; transform:translateY(18px); }
+to   { opacity:1; transform:translateY(0); }
+}
 
-  @media (max-width: 620px) {
-    .topbar { padding: 0 16px; }
-    .prognose-row { grid-template-columns: 1fr 1fr; font-size: 13px; }
-    .prognose-row.header { display: none; }
-    .progress-header { flex-direction: column; align-items: flex-start; }
-    .target-block { text-align: left; }
-  }
+@media (max-width: 620px) {
+.topbar { padding: 0 16px; }
+.prognose-row { grid-template-columns: 1fr 1fr; font-size: 13px; }
+.prognose-row.header { display: none; }
+.progress-header { flex-direction: column; align-items: flex-start; }
+.target-block { text-align: left; }
+}
 </style>
 </head>
 <body>
 
-<!-- Loading -->
 <div class="loading-overlay" id="loadingOverlay">
-  <div class="loader-ring"></div>
-  <div class="loader-text">Data ophalen uit Google Sheets…</div>
+<div class="loader-ring"></div>
+<div class="loader-text">Data ophalen uit Google Sheets…</div>
 </div>
 
-<!-- Top navigation bar -->
 <div class="topbar">
-  <div class="topbar-logo">
-    <img src="https://www.collincrowdfund.nl/wp-content/uploads/2020/03/logo_meerdangeldalleen-01.svg" alt="Collin Crowdfund">
-  </div>
-  <div class="topbar-tag"><span class="live-dot"></span>Live Funding Tracker</div>
+<div class="topbar-logo">
+<img src="https://www.collincrowdfund.nl/wp-content/uploads/2020/03/logo_meerdangeldalleen-01.svg" alt="Collin Crowdfund">
+</div>
+<div class="topbar-tag"><span class="live-dot"></span>Live Funding Tracker</div>
 </div>
 <div class="accent-bar"></div>
 
 <div class="page">
 
-  <header>
-    <div class="eyebrow">Funding dashboard</div>
-    <h1>Wanneer is<br><em>dat feestje?</em></h1>
-    <div class="divider"></div>
-    <div class="subtitle">
-      Startmeting: 6 januari 2026 &nbsp;·&nbsp;
-      Bijgewerkt: <span id="lastUpdate">laden…</span> &nbsp;·&nbsp;
-      <span id="metingCount">—</span> metingen
-    </div>
-  </header>
+<header>
+<div class="eyebrow">Funding dashboard</div>
+<h1>Wanneer is<br><em>dat feestje?</em></h1>
+<div class="divider"></div>
+<div class="subtitle">
+Startmeting: 6 januari 2026 &nbsp;·&nbsp;
+Bijgewerkt: <span id="lastUpdate">laden…</span> &nbsp;·&nbsp;
+<span id="metingCount">—</span> metingen
+</div>
+</header>
 
-  <div class="error-box" id="errorBox">
-    ⚠️ Kon data niet ophalen uit Google Sheets. Controleer of de sheet publiek staat.
-  </div>
+<div class="error-box" id="errorBox">
+⚠️ Kon data niet ophalen uit Google Sheets. Controleer of de sheet publiek staat (Delen → Iedereen met de link → Kijker).
+</div>
 
-  <!-- 1. Progress -->
-  <div class="card progress-card">
-    <div class="progress-header">
-      <div>
-        <div class="card-label">Totaal geïnvesteerd</div>
-        <div class="amount-big" id="currentAmount">—</div>
-      </div>
-      <div class="target-block">
-        <div class="label">Target</div>
-        <div class="val">€ 2.000.000.000</div>
-      </div>
-    </div>
-    <div class="progress-bar-outer">
-      <div class="progress-bar-inner" id="progressBar"></div>
-    </div>
-    <div class="progress-meta">
-      <span class="pct" id="progressPct">—</span>
-      <span>Nog te funden: <strong id="remaining">—</strong></span>
-    </div>
-  </div>
+<div class="card progress-card">
+<div class="progress-header">
+<div>
+<div class="card-label">Totaal geïnvesteerd</div>
+<div class="amount-big" id="currentAmount">—</div>
+</div>
+<div class="target-block">
+<div class="label">Target</div>
+<div class="val">€ 2.000.000.000</div>
+</div>
+</div>
+<div class="progress-bar-outer">
+<div class="progress-bar-inner" id="progressBar"></div>
+</div>
+<div class="progress-meta">
+<span class="pct" id="progressPct">—</span>
+<span>Nog te funden: <strong id="remaining">—</strong></span>
+</div>
+</div>
 
-  <!-- 2. Prognose — direct onder progress -->
-  <div class="card prognose-card">
-    <div class="section-header">Prognose — wanneer bereiken we het target?</div>
-    <div class="prognose-row header">
-      <div>Methode</div>
-      <div>Dag gemiddelde</div>
-      <div>Dagen te gaan</div>
-      <div>Verwachte datum</div>
-    </div>
-    <div class="prognose-row">
-      <div>Totaal gemiddelde</div>
-      <div style="color:var(--muted)" id="p1avg">—</div>
-      <div style="color:var(--muted)" id="p1days">—</div>
-      <div class="date-val" id="p1date">—</div>
-    </div>
-    <div class="prognose-row">
-      <div>MA 30 dagen</div>
-      <div style="color:var(--muted)" id="p2avg">—</div>
-      <div style="color:var(--muted)" id="p2days">—</div>
-      <div class="date-val" id="p2date">—</div>
-    </div>
-    <div class="prognose-row">
-      <div>MA 7 dagen</div>
-      <div style="color:var(--muted)" id="p3avg">—</div>
-      <div style="color:var(--muted)" id="p3days">—</div>
-      <div class="date-val" id="p3date">—</div>
-    </div>
-    <div class="prognose-row">
-      <div style="color:var(--orange); font-weight:600">Jeroen Ter Huurne</div>
-      <div style="color:var(--muted)">—</div>
-      <div style="color:var(--muted)">—</div>
-      <div class="date-val">23 april 2027 <span class="badge badge-green">optimistisch</span></div>
-    </div>
-  </div>
+<div class="card prognose-card">
+<div class="section-header">Prognose — wanneer bereiken we het target?</div>
+<div class="prognose-row header">
+<div>Methode</div>
+<div>Dag gemiddelde</div>
+<div>Dagen te gaan</div>
+<div>Verwachte datum</div>
+</div>
+<div class="prognose-row">
+<div>Totaal gemiddelde</div>
+<div style="color:var(--muted)" id="p1avg">—</div>
+<div style="color:var(--muted)" id="p1days">—</div>
+<div class="date-val" id="p1date">—</div>
+</div>
+<div class="prognose-row">
+<div>MA 30 dagen</div>
+<div style="color:var(--muted)" id="p2avg">—</div>
+<div style="color:var(--muted)" id="p2days">—</div>
+<div class="date-val" id="p2date">—</div>
+</div>
+<div class="prognose-row">
+<div>MA 7 dagen</div>
+<div style="color:var(--muted)" id="p3avg">—</div>
+<div style="color:var(--muted)" id="p3days">—</div>
+<div class="date-val" id="p3date">—</div>
+</div>
+<div class="prognose-row">
+<div style="color:var(--orange); font-weight:600">Jeroen Ter Huurne</div>
+<div style="color:var(--muted)">—</div>
+<div style="color:var(--muted)">—</div>
+<div class="date-val">23 april 2027 <span class="badge badge-green">optimistisch</span></div>
+</div>
+</div>
 
-  <!-- 3. Stats kaarten — één positie naar beneden -->
-  <div class="stats-grid">
-    <div class="card" style="animation-delay:.2s">
-      <div class="card-label">Dag gemiddelde (totaal)</div>
-      <div class="card-value" id="avgTotal">—</div>
-      <div class="card-sub" id="avgTotalSub">—</div>
-    </div>
-    <div class="card" style="animation-delay:.25s">
-      <div class="card-label">Voortschrijdend gemiddelde 30 dagen</div>
-      <div class="card-value" id="ma30">—</div>
-      <div class="card-sub" id="ma30Sub">—</div>
-    </div>
-    <div class="card" style="animation-delay:.3s">
-      <div class="card-label">Voortschrijdend gemiddelde 7 dagen</div>
-      <div class="card-value" id="ma7">—</div>
-      <div class="card-sub" id="ma7Sub">—</div>
-    </div>
-  </div>
+<div class="stats-grid">
+<div class="card" style="animation-delay:.2s">
+<div class="card-label">Dag gemiddelde (totaal)</div>
+<div class="card-value" id="avgTotal">—</div>
+<div class="card-sub" id="avgTotalSub">—</div>
+</div>
+<div class="card" style="animation-delay:.25s">
+<div class="card-label">Voortschrijdend gemiddelde 30 dagen</div>
+<div class="card-value" id="ma30">—</div>
+<div class="card-sub" id="ma30Sub">—</div>
+</div>
+<div class="card" style="animation-delay:.3s">
+<div class="card-label">Voortschrijdend gemiddelde 7 dagen</div>
+<div class="card-value" id="ma7">—</div>
+<div class="card-sub" id="ma7Sub">—</div>
+</div>
+</div>
 
-  <!-- 4. Grafiek — onderaan -->
-  <div class="card chart-card">
-    <div class="section-header">Gefund over tijd</div>
-    <canvas id="fundingChart" height="300"></canvas>
-  </div>
+<div class="card chart-card">
+<div class="section-header">Gefund over tijd</div>
+<canvas id="fundingChart" height="300"></canvas>
+</div>
 
 </div>
 
 <footer>
-  <span class="live-dot" style="vertical-align:middle; margin-right:6px;"></span>
-  Data live uit Google Sheets · elke paginalading actueel
+<span class="live-dot" style="vertical-align:middle; margin-right:6px;"></span>
+Data live uit Google Sheets · elke paginalading actueel
 </footer>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script>
-const SHEET_ID  = '1-PqdNknNE3pZo8rc947TEG83pfc4cgxCQ2rs75QcM0s';
-const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=0`;
-const PROXIES   = [
-  u => `https://corsproxy.io/?url=${encodeURIComponent(u)}`,
-  u => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
-  u => `https://thingproxy.freeboard.io/fetch/${u}`,
-];
-const TARGET = 2_000_000_000;
+// ── Configuratie ──────────────────────────────────────────────
+const SHEET_ID = '1-PqdNknNE3pZo8rc947TEG83pfc4cgxCQ2rs75QcM0s';
+const GID      = '2028523272'; // tabblad-id uit jouw URL
+const TARGET   = 2_000_000_000;
 
-async function fetchCSV() {
-  for (const proxy of PROXIES) {
-    try {
-      const r = await fetch(proxy(SHEET_URL), { signal: AbortSignal.timeout(8000) });
-      if (r.ok) {
-        const text = await r.text();
-        if (text.includes('Datum')) return text;
-      }
-    } catch(e) { /* probeer volgende proxy */ }
-  }
-  throw new Error('Alle proxies mislukt');
-}
+// Google Sheets Visualization API — werkt natively cross-origin,
+// geen proxy nodig, ook niet op GitHub Pages.
+const GVIZ_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&gid=${GID}`;
 
+// ── Helpers ───────────────────────────────────────────────────
 const MONTHS_FULL  = ['januari','februari','maart','april','mei','juni','juli','augustus','september','oktober','november','december'];
 const MONTHS_SHORT = ['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'];
 
-const fmt      = n => '€ ' + Math.round(n).toLocaleString('nl-NL');
-const fmtFull  = d => `${d.getDate()} ${MONTHS_FULL[d.getMonth()]} ${d.getFullYear()}`;
-const fmtShort = d => `${d.getDate()} ${MONTHS_SHORT[d.getMonth()]}`;
-
-function addDays(date, n) {
-  const d = new Date(date);
-  d.setDate(d.getDate() + Math.round(n));
-  return d;
+function fmt(v) {
+  return '€\u202f' + Math.round(v).toLocaleString('nl-NL');
+}
+function fmtFull(d) {
+  return `${d.getDate()} ${MONTHS_FULL[d.getMonth()]} ${d.getFullYear()}`;
+}
+function fmtShort(d) {
+  return `${d.getDate()} ${MONTHS_SHORT[d.getMonth()]}`;
 }
 function parseAmount(s) {
-  return parseFloat(s.replace(/€/g,'').replace(/\s/g,'').replace(/\./g,'').replace(',','.'));
+  if (!s) return NaN;
+  return parseFloat(s.toString().replace(/[€\s.]/g,'').replace(',','.'));
 }
-function parseNLDate(s) {
-  const p = s.trim().split(' ')[0].split('-');
-  return new Date(+p[2], +p[1]-1, +p[0]);
-}
-function prognose(remaining, avg, lastDate) {
-  if (avg <= 0) return { str:'onbekend', n: Infinity };
-  const n = remaining / avg;
-  return { str: fmtFull(addDays(lastDate, n)), n: Math.round(n) };
+function prognose(remaining, dailyAvg, fromDate) {
+  if (!dailyAvg || dailyAvg <= 0) return { n: Infinity, str: 'onbekend' };
+  const n    = Math.ceil(remaining / dailyAvg);
+  const dest = new Date(fromDate.getTime() + n * 86400000);
+  return { n, str: fmtFull(dest) };
 }
 function badge(n) {
-  if (n < 600)  return '<span class="badge badge-green">on track</span>';
-  if (n < 1200) return '<span class="badge badge-warn">trager</span>';
-  return '<span class="badge badge-red">zorgelijk</span>';
+  if (n < 365)  return '<span class="badge badge-green">optimistisch</span>';
+  if (n < 730)  return '<span class="badge badge-warn">realistisch</span>';
+  return '<span class="badge badge-red">pessimistisch</span>';
 }
 
+// ── Parse gviz JSON response ──────────────────────────────────
+function parseGvizResponse(text) {
+  // Google wraps the JSON in:  google.visualization.Query.setResponse({...});
+  const json = text.replace(/^[^(]+\(/, '').replace(/\);?\s*$/, '');
+  const obj  = JSON.parse(json);
+  const rows = obj.table.rows;
+  const cols = obj.table.cols;
+
+  // Find column indices by label (case-insensitive)
+  const labelOf = i => (cols[i].label || '').toLowerCase();
+  let dateCol = -1, amtCol = -1;
+  for (let i = 0; i < cols.length; i++) {
+    const l = labelOf(i);
+    if (l.includes('datum') || l.includes('date'))  dateCol = i;
+    if (l.includes('total') || l.includes('gefund') || l.includes('bedrag') || l.includes('amount')) amtCol = i;
+  }
+  // Fallback: kolom 0 = datum, kolom 6 = bedrag (zelfde als originele code)
+  if (dateCol === -1) dateCol = 0;
+  if (amtCol  === -1) amtCol  = 6;
+
+  const result = [];
+  for (const row of rows) {
+    if (!row.c) continue;
+    const dateCell = row.c[dateCol];
+    const amtCell  = row.c[amtCol];
+    if (!dateCell || !amtCell) continue;
+
+    // gviz geeft datums als Date-object (v) of als string
+    let date;
+    if (dateCell.v && typeof dateCell.v === 'string' && dateCell.v.startsWith('Date(')) {
+      // Formaat: Date(2026,0,6)  → jaar, maand (0-based), dag
+      const parts = dateCell.v.replace('Date(','').replace(')','').split(',').map(Number);
+      date = new Date(parts[0], parts[1], parts[2]);
+    } else if (dateCell.f) {
+      // Opgemaakte string, probeer te parsen
+      date = new Date(dateCell.f);
+    } else {
+      date = new Date(dateCell.v);
+    }
+
+    const amt = parseAmount(amtCell.v !== null ? amtCell.v : amtCell.f);
+    if (isNaN(amt) || isNaN(date.getTime())) continue;
+    result.push({ date, amt });
+  }
+  return result;
+}
+
+// ── Hoofd laadlogica ──────────────────────────────────────────
 let chart = null;
 
 async function load() {
   try {
-    const csv = await fetchCSV();
+    const res = await fetch(GVIZ_URL);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const text = await res.text();
 
-    const lines = csv.trim().split('\n');
-    const totalRows = lines.length - 1;
+    const rawRows = parseGvizResponse(text);
+    if (!rawRows.length) throw new Error('Geen data gevonden in sheet');
 
-    const rawRows = [];
-    for (const line of lines.slice(1)) {
-      if (!line.trim()) continue;
-      const cols = line.split(',');
-      if (cols.length < 7) continue;
-      const dateStr = cols[0].replace(/"/g,'').trim();
-      const amtStr  = cols[6].replace(/"/g,'').trim();
-      if (!dateStr || !amtStr) continue;
-      const date = parseNLDate(dateStr);
-      const amt  = parseAmount(amtStr);
-      if (isNaN(amt) || isNaN(date.getTime())) continue;
-      rawRows.push({ date, amt });
-    }
+    rawRows.sort((a, b) => a.date - b.date);
 
-    if (!rawRows.length) throw new Error('no data');
-    rawRows.sort((a,b) => a.date - b.date);
-
-    // Dedupliceer op datum, laatste waarde wint
+    // Dedupliceer op datum
     const byDate = {};
     for (const row of rawRows) byDate[row.date.toDateString()] = row;
-    const data = Object.values(byDate).sort((a,b) => a.date - b.date);
+    const data = Object.values(byDate).sort((a, b) => a.date - b.date);
 
-    const first   = data[0];
-    const last    = data[data.length - 1];
-    const current = last.amt;
+    const first     = data[0];
+    const last      = data[data.length - 1];
+    const current   = last.amt;
     const remaining = TARGET - current;
-    const spanDays  = Math.round((last.date - first.date) / 86400000);
+    const spanDays  = Math.max(1, Math.round((last.date - first.date) / 86400000));
     const totalInc  = current - first.amt;
     const avgTotal  = totalInc / spanDays;
 
-    const sl30 = data.slice(-30);
-    const inc30 = sl30[sl30.length-1].amt - sl30[0].amt;
-    const d30   = Math.max(1, Math.round((sl30[sl30.length-1].date - sl30[0].date)/86400000));
+    const sl30  = data.slice(-30);
+    const inc30 = sl30[sl30.length - 1].amt - sl30[0].amt;
+    const d30   = Math.max(1, Math.round((sl30[sl30.length - 1].date - sl30[0].date) / 86400000));
     const ma30  = inc30 / d30;
 
     const sl7  = data.slice(-7);
-    const inc7  = sl7[sl7.length-1].amt - sl7[0].amt;
-    const d7    = Math.max(1, Math.round((sl7[sl7.length-1].date - sl7[0].date)/86400000));
-    const ma7   = inc7 / d7;
+    const inc7 = sl7[sl7.length - 1].amt - sl7[0].amt;
+    const d7   = Math.max(1, Math.round((sl7[sl7.length - 1].date - sl7[0].date) / 86400000));
+    const ma7  = inc7 / d7;
 
-    // DOM updates
+    // ── DOM updaten ──
     document.getElementById('lastUpdate').textContent  = fmtFull(last.date);
-    document.getElementById('metingCount').textContent = totalRows;
+    document.getElementById('metingCount').textContent = data.length;
 
     const pct = (current / TARGET * 100).toFixed(1);
     document.getElementById('currentAmount').textContent = fmt(current);
@@ -611,12 +613,12 @@ async function load() {
     document.getElementById('p3days').textContent = p3.n.toLocaleString('nl-NL');
     document.getElementById('p3date').innerHTML   = p3.str + badge(p3.n);
 
-    // Grafiek
+    // ── Grafiek ──
     const labels = data.map(r => fmtShort(r.date));
     const values = data.map(r => r.amt);
 
     if (chart) chart.destroy();
-    const ctx = document.getElementById('fundingChart').getContext('2d');
+    const ctx  = document.getElementById('fundingChart').getContext('2d');
     const grad = ctx.createLinearGradient(0, 0, 0, 300);
     grad.addColorStop(0, '#1a3a5c28');
     grad.addColorStop(1, '#1a3a5c00');
@@ -664,7 +666,7 @@ async function load() {
             ticks: {
               color: '#6e8aa3',
               font: { family: 'Source Sans 3', size: 12 },
-              callback: v => '€' + (v/1e9).toFixed(3) + 'B'
+              callback: v => '€' + (v / 1e9).toFixed(3) + 'B'
             },
             grid: { color: '#d6dde840' },
             border: { color: '#d6dde8' }
@@ -673,12 +675,13 @@ async function load() {
       }
     });
 
+    // Verberg loader
     const ol = document.getElementById('loadingOverlay');
     ol.classList.add('hidden');
     setTimeout(() => ol.style.display = 'none', 500);
 
-  } catch(e) {
-    console.error(e);
+  } catch (e) {
+    console.error('Laadfout:', e);
     const ol = document.getElementById('loadingOverlay');
     ol.classList.add('hidden');
     setTimeout(() => ol.style.display = 'none', 500);
