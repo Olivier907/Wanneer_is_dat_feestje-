@@ -460,11 +460,7 @@ Data live uit Google Sheets · elke paginalading actueel
 <script>
 // ── Configuratie ──────────────────────────────────────────────
 const SHEET_ID = '1-PqdNknNE3pZo8rc947TEG83pfc4cgxCQ2rs75QcM0s';
-const GID      = '2028523272'; // tabblad-id uit jouw URL
-const TARGET   = 2_000_000_000;
-
-// Google Sheets Visualization API — werkt natively cross-origin,
-// geen proxy nodig, ook niet op GitHub Pages.
+const GID      = '2028523272';
 const GVIZ_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&gid=${GID}`;
 
 // ── Helpers ───────────────────────────────────────────────────
@@ -472,75 +468,43 @@ const MONTHS_FULL  = ['januari','februari','maart','april','mei','juni','juli','
 const MONTHS_SHORT = ['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'];
 
 function fmt(v) {
+  if (v === null || v === undefined || isNaN(v)) return '—';
   return '€\u202f' + Math.round(v).toLocaleString('nl-NL');
-}
-function fmtFull(d) {
-  return `${d.getDate()} ${MONTHS_FULL[d.getMonth()]} ${d.getFullYear()}`;
 }
 function fmtShort(d) {
   return `${d.getDate()} ${MONTHS_SHORT[d.getMonth()]}`;
 }
-function parseAmount(s) {
-  if (!s) return NaN;
-  return parseFloat(s.toString().replace(/[€\s.]/g,'').replace(',','.'));
-}
-function prognose(remaining, dailyAvg, fromDate) {
-  if (!dailyAvg || dailyAvg <= 0) return { n: Infinity, str: 'onbekend' };
-  const n    = Math.ceil(remaining / dailyAvg);
-  const dest = new Date(fromDate.getTime() + n * 86400000);
-  return { n, str: fmtFull(dest) };
-}
-function badge(n) {
-  if (n < 365)  return '<span class="badge badge-green">optimistisch</span>';
-  if (n < 730)  return '<span class="badge badge-warn">realistisch</span>';
+function badge(days) {
+  if (days < 365)  return '<span class="badge badge-green">optimistisch</span>';
+  if (days < 730)  return '<span class="badge badge-warn">realistisch</span>';
   return '<span class="badge badge-red">pessimistisch</span>';
 }
 
-// ── Parse gviz JSON response ──────────────────────────────────
-function parseGvizResponse(text) {
-  // Google wraps the JSON in:  google.visualization.Query.setResponse({...});
-  const json = text.replace(/^[^(]+\(/, '').replace(/\);?\s*$/, '');
-  const obj  = JSON.parse(json);
-  const rows = obj.table.rows;
-  const cols = obj.table.cols;
+// Haal numerieke waarde uit een gviz cel (formatted string heeft €-tekens etc.)
+function cellNum(cell) {
+  if (!cell) return NaN;
+  // Probeer eerst de ruwe numerieke waarde
+  if (typeof cell.v === 'number') return cell.v;
+  // Anders parse de opgemaakte string
+  const s = (cell.f || cell.v || '').toString();
+  return parseFloat(s.replace(/[€\s.]/g, '').replace(',', '.'));
+}
 
-  // Find column indices by label (case-insensitive)
-  const labelOf = i => (cols[i].label || '').toLowerCase();
-  let dateCol = -1, amtCol = -1;
-  for (let i = 0; i < cols.length; i++) {
-    const l = labelOf(i);
-    if (l.includes('datum') || l.includes('date'))  dateCol = i;
-    if (l.includes('total') || l.includes('gefund') || l.includes('bedrag') || l.includes('amount')) amtCol = i;
+// Haal string waarde uit een cel (voor datums als tekst)
+function cellStr(cell) {
+  if (!cell) return '';
+  return (cell.f || cell.v || '').toString().trim();
+}
+
+// Parse gviz datum: "Date(2026,0,6)" → JS Date
+function parseGvizDate(cell) {
+  if (!cell) return null;
+  if (typeof cell.v === 'string' && cell.v.startsWith('Date(')) {
+    const parts = cell.v.replace('Date(','').replace(')','').split(',').map(Number);
+    return new Date(parts[0], parts[1], parts[2]);
   }
-  // Fallback: kolom 0 = datum, kolom 6 = bedrag (zelfde als originele code)
-  if (dateCol === -1) dateCol = 0;
-  if (amtCol  === -1) amtCol  = 6;
-
-  const result = [];
-  for (const row of rows) {
-    if (!row.c) continue;
-    const dateCell = row.c[dateCol];
-    const amtCell  = row.c[amtCol];
-    if (!dateCell || !amtCell) continue;
-
-    // gviz geeft datums als Date-object (v) of als string
-    let date;
-    if (dateCell.v && typeof dateCell.v === 'string' && dateCell.v.startsWith('Date(')) {
-      // Formaat: Date(2026,0,6)  → jaar, maand (0-based), dag
-      const parts = dateCell.v.replace('Date(','').replace(')','').split(',').map(Number);
-      date = new Date(parts[0], parts[1], parts[2]);
-    } else if (dateCell.f) {
-      // Opgemaakte string, probeer te parsen
-      date = new Date(dateCell.f);
-    } else {
-      date = new Date(dateCell.v);
-    }
-
-    const amt = parseAmount(amtCell.v !== null ? amtCell.v : amtCell.f);
-    if (isNaN(amt) || isNaN(date.getTime())) continue;
-    result.push({ date, amt });
-  }
-  return result;
+  if (cell.f) return new Date(cell.f);
+  return new Date(cell.v);
 }
 
 // ── Hoofd laadlogica ──────────────────────────────────────────
@@ -552,128 +516,166 @@ async function load() {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const text = await res.text();
 
-    const rawRows = parseGvizResponse(text);
-    if (!rawRows.length) throw new Error('Geen data gevonden in sheet');
+    const json = text.replace(/^[^(]+\(/, '').replace(/\);?\s*$/, '');
+    const obj  = JSON.parse(json);
+    const rows = obj.table.rows;
 
-    rawRows.sort((a, b) => a.date - b.date);
+    // Kolom A = index 0, Kolom B = index 1
+    // Rij 1  = rij index 0 (header "vermogen groei")
+    // Rij 2  = index 1 → target
+    // Rij 3  = index 2 → huidig (B3)
+    // Rij 4  = index 3 → nog te funden (B4)
+    // Rij 5  = index 4 → toename
+    // Rij 6  = index 5 → aantal dagen/metingen (B6)
+    // Rij 7  = index 6 → dag gemiddelde totaal (B7)
+    // Rij 8  = index 7 → aantal dagen te gaan totaal (B8)
+    // Rij 9  = index 8 → prognose totaal gemiddelde (B9) — BOLD
+    // Rij 10 = index 9 → toename laatste 7 dagen
+    // Rij 11 = index 10 → aantal dagen (7)
+    // Rij 12 = index 11 → dag gemiddelde MA7 (B12)
+    // Rij 13 = index 12 → aantal dagen te gaan MA7 (B13)
+    // Rij 14 = index 13 → prognose MA7 (B14) — BOLD
+    // Rij 15 = index 14 → toename laatste 30 dagen
+    // Rij 16 = index 15 → aantal dagen (30)
+    // Rij 17 = index 16 → dag gemiddelde MA30 (B17)
+    // Rij 18 = index 17 → aantal dagen te gaan MA30 (B18)
+    // Rij 19 = index 18 → prognose MA30 (B19) — BOLD
+    // Rij 20 = index 19 → Jeroen Ter Huurne (B20) — BOLD
 
-    // Dedupliceer op datum
-    const byDate = {};
-    for (const row of rawRows) byDate[row.date.toDateString()] = row;
-    const data = Object.values(byDate).sort((a, b) => a.date - b.date);
+    const b = (rowIdx) => rows[rowIdx] && rows[rowIdx].c ? rows[rowIdx].c[1] : null;
 
-    const first     = data[0];
-    const last      = data[data.length - 1];
-    const current   = last.amt;
-    const remaining = TARGET - current;
-    const spanDays  = Math.max(1, Math.round((last.date - first.date) / 86400000));
-    const totalInc  = current - first.amt;
-    const avgTotal  = totalInc / spanDays;
+    const target    = cellNum(b(1));   // B2
+    const current   = cellNum(b(2));   // B3
+    const remaining = cellNum(b(3));   // B4
+    const metingen  = cellNum(b(5));   // B6
+    const avgTotal  = cellNum(b(6));   // B7
+    const p1days    = cellNum(b(7));   // B8
+    const p1date    = cellStr(b(8));   // B9
+    const inc7      = cellNum(b(9));   // B10
+    const ma7       = cellNum(b(11));  // B12
+    const p3days    = cellNum(b(12));  // B13
+    const p3date    = cellStr(b(13));  // B14
+    const inc30     = cellNum(b(14));  // B15
+    const ma30      = cellNum(b(16));  // B17
+    const p2days    = cellNum(b(17));  // B18
+    const p2date    = cellStr(b(18));  // B19
 
-    const sl30  = data.slice(-30);
-    const inc30 = sl30[sl30.length - 1].amt - sl30[0].amt;
-    const d30   = Math.max(1, Math.round((sl30[sl30.length - 1].date - sl30[0].date) / 86400000));
-    const ma30  = inc30 / d30;
+    if (isNaN(current)) throw new Error('Geen geldige data in sheet');
 
-    const sl7  = data.slice(-7);
-    const inc7 = sl7[sl7.length - 1].amt - sl7[0].amt;
-    const d7   = Math.max(1, Math.round((sl7[sl7.length - 1].date - sl7[0].date) / 86400000));
-    const ma7  = inc7 / d7;
+    const TARGET_VAL = isNaN(target) ? 2_000_000_000 : target;
+    const pct = (current / TARGET_VAL * 100).toFixed(1);
 
     // ── DOM updaten ──
-    document.getElementById('lastUpdate').textContent  = fmtFull(last.date);
-    document.getElementById('metingCount').textContent = data.length;
-
-    const pct = (current / TARGET * 100).toFixed(1);
+    document.getElementById('metingCount').textContent   = isNaN(metingen) ? '—' : Math.round(metingen);
     document.getElementById('currentAmount').textContent = fmt(current);
     document.getElementById('remaining').textContent     = fmt(remaining);
     document.getElementById('progressPct').textContent   = pct + '%';
     setTimeout(() => document.getElementById('progressBar').style.width = pct + '%', 300);
 
     document.getElementById('avgTotal').textContent    = fmt(avgTotal);
-    document.getElementById('avgTotalSub').textContent = `Over ${spanDays} dagen · +${fmt(totalInc)} totaal`;
+    document.getElementById('avgTotalSub').textContent = `Dag gemiddelde over alle metingen`;
     document.getElementById('ma30').textContent        = fmt(ma30);
-    document.getElementById('ma30Sub').textContent     = `Toename laatste 30 metingen: ${fmt(inc30)}`;
+    document.getElementById('ma30Sub').textContent     = `Toename laatste 30 dagen: ${fmt(inc30)}`;
     document.getElementById('ma7').textContent         = fmt(ma7);
-    document.getElementById('ma7Sub').textContent      = `Toename laatste 7 metingen: ${fmt(inc7)}`;
+    document.getElementById('ma7Sub').textContent      = `Toename laatste 7 dagen: ${fmt(inc7)}`;
 
-    const p1 = prognose(remaining, avgTotal, last.date);
-    const p2 = prognose(remaining, ma30, last.date);
-    const p3 = prognose(remaining, ma7, last.date);
-
+    // Prognose rijen — datum direct uit sheet, badge op basis van dagen te gaan
     document.getElementById('p1avg').textContent  = fmt(avgTotal);
-    document.getElementById('p1days').textContent = p1.n.toLocaleString('nl-NL');
-    document.getElementById('p1date').innerHTML   = p1.str + badge(p1.n);
+    document.getElementById('p1days').textContent = isNaN(p1days) ? '—' : Math.round(p1days).toLocaleString('nl-NL');
+    document.getElementById('p1date').innerHTML   = p1date + badge(p1days);
 
     document.getElementById('p2avg').textContent  = fmt(ma30);
-    document.getElementById('p2days').textContent = p2.n.toLocaleString('nl-NL');
-    document.getElementById('p2date').innerHTML   = p2.str + badge(p2.n);
+    document.getElementById('p2days').textContent = isNaN(p2days) ? '—' : Math.round(p2days).toLocaleString('nl-NL');
+    document.getElementById('p2date').innerHTML   = p2date + badge(p2days);
 
     document.getElementById('p3avg').textContent  = fmt(ma7);
-    document.getElementById('p3days').textContent = p3.n.toLocaleString('nl-NL');
-    document.getElementById('p3date').innerHTML   = p3.str + badge(p3.n);
+    document.getElementById('p3days').textContent = isNaN(p3days) ? '—' : Math.round(p3days).toLocaleString('nl-NL');
+    document.getElementById('p3date').innerHTML   = p3date + badge(p3days);
 
-    // ── Grafiek ──
-    const labels = data.map(r => fmtShort(r.date));
-    const values = data.map(r => r.amt);
+    // ── Grafiek: zoek datum+bedrag kolommen in de data-rijen ──
+    // De forecast sheet heeft ook de meetdata. We zoeken rijen waar kolom A een datum is
+    // en kolom B een bedrag > 1 miljard.
+    const chartData = [];
+    for (let i = 0; i < rows.length; i++) {
+      const row = rows[i];
+      if (!row.c) continue;
+      const dateCell = row.c[0];
+      const amtCell  = row.c[1];
+      if (!dateCell || !amtCell) continue;
+      const d = parseGvizDate(dateCell);
+      const a = cellNum(amtCell);
+      if (!d || isNaN(d.getTime()) || isNaN(a) || a < 1_000_000_000) continue;
+      chartData.push({ date: d, amt: a });
+    }
+    chartData.sort((a, b) => a.date - b.date);
 
-    if (chart) chart.destroy();
-    const ctx  = document.getElementById('fundingChart').getContext('2d');
-    const grad = ctx.createLinearGradient(0, 0, 0, 300);
-    grad.addColorStop(0, '#1a3a5c28');
-    grad.addColorStop(1, '#1a3a5c00');
+    // Bijgewerkt label (laatste datum uit grafiekdata of nu)
+    const lastDate = chartData.length ? chartData[chartData.length - 1].date : new Date();
+    document.getElementById('lastUpdate').textContent = `${lastDate.getDate()} ${['januari','februari','maart','april','mei','juni','juli','augustus','september','oktober','november','december'][lastDate.getMonth()]} ${lastDate.getFullYear()}`;
 
-    chart = new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels,
-        datasets: [{
-          data: values,
-          borderColor: '#1a3a5c',
-          backgroundColor: grad,
-          borderWidth: 2,
-          pointRadius: 0,
-          pointHoverRadius: 5,
-          pointHoverBackgroundColor: '#f5a623',
-          pointHoverBorderColor: '#1a3a5c',
-          fill: true,
-          tension: 0.35,
-        }]
-      },
-      options: {
-        responsive: true,
-        interaction: { intersect: false, mode: 'index' },
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            backgroundColor: '#1a3a5c',
-            borderColor: '#f5a623',
-            borderWidth: 1,
-            titleColor: '#a8c4dc',
-            bodyColor: '#ffffff',
-            titleFont: { family: 'Source Sans 3', size: 12 },
-            bodyFont: { family: 'Playfair Display', size: 16 },
-            callbacks: { label: c => '€ ' + c.parsed.y.toLocaleString('nl-NL') }
-          }
+    // ── Grafiek tekenen ──
+    if (chartData.length >= 2) {
+      const labels = chartData.map(r => fmtShort(r.date));
+      const values = chartData.map(r => r.amt);
+
+      if (chart) chart.destroy();
+      const ctx  = document.getElementById('fundingChart').getContext('2d');
+      const grad = ctx.createLinearGradient(0, 0, 0, 300);
+      grad.addColorStop(0, '#1a3a5c28');
+      grad.addColorStop(1, '#1a3a5c00');
+
+      chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [{
+            data: values,
+            borderColor: '#1a3a5c',
+            backgroundColor: grad,
+            borderWidth: 2,
+            pointRadius: 0,
+            pointHoverRadius: 5,
+            pointHoverBackgroundColor: '#f5a623',
+            pointHoverBorderColor: '#1a3a5c',
+            fill: true,
+            tension: 0.35,
+          }]
         },
-        scales: {
-          x: {
-            ticks: { color: '#6e8aa3', font: { family: 'Source Sans 3', size: 12 }, maxTicksLimit: 10 },
-            grid: { color: '#d6dde820' },
-            border: { color: '#d6dde8' }
+        options: {
+          responsive: true,
+          interaction: { intersect: false, mode: 'index' },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: '#1a3a5c',
+              borderColor: '#f5a623',
+              borderWidth: 1,
+              titleColor: '#a8c4dc',
+              bodyColor: '#ffffff',
+              titleFont: { family: 'Source Sans 3', size: 12 },
+              bodyFont: { family: 'Playfair Display', size: 16 },
+              callbacks: { label: c => '€ ' + c.parsed.y.toLocaleString('nl-NL') }
+            }
           },
-          y: {
-            ticks: {
-              color: '#6e8aa3',
-              font: { family: 'Source Sans 3', size: 12 },
-              callback: v => '€' + (v / 1e9).toFixed(3) + 'B'
+          scales: {
+            x: {
+              ticks: { color: '#6e8aa3', font: { family: 'Source Sans 3', size: 12 }, maxTicksLimit: 10 },
+              grid: { color: '#d6dde820' },
+              border: { color: '#d6dde8' }
             },
-            grid: { color: '#d6dde840' },
-            border: { color: '#d6dde8' }
+            y: {
+              ticks: {
+                color: '#6e8aa3',
+                font: { family: 'Source Sans 3', size: 12 },
+                callback: v => '€' + (v / 1e9).toFixed(3) + 'B'
+              },
+              grid: { color: '#d6dde840' },
+              border: { color: '#d6dde8' }
+            }
           }
         }
-      }
-    });
+      });
+    }
 
     // Verberg loader
     const ol = document.getElementById('loadingOverlay');
