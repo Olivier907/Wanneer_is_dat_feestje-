@@ -1,0 +1,158 @@
+<script>
+// ── Configuratie ──────────────────────────────────────────────
+const SHEET_ID = '1-PqdNknNE3pZo8rc947TEG83pfc4cgxCQ2rs75QcM0s';
+const GID      = '2028523272'; // Dit is het ID voor tabblad 'forecast'
+const GVIZ_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&gid=${GID}`;
+
+// ── Helpers voor Formattering ─────────────────────────────────
+function fmt(v) {
+  if (v === null || v === undefined || isNaN(v)) return '—';
+  return '€\u202f' + Math.round(v).toLocaleString('nl-NL');
+}
+
+function cellNum(cell) {
+  if (!cell) return NaN;
+  if (typeof cell.v === 'number') return cell.v;
+  const s = (cell.f || cell.v || '').toString();
+  return parseFloat(s.replace(/[€\s.]/g, '').replace(',', '.'));
+}
+
+function cellStr(cell) {
+  if (!cell) return '—';
+  return (cell.f || cell.v || '').toString().trim();
+}
+
+function parseGvizDate(cell) {
+  if (!cell || !cell.v) return null;
+  if (typeof cell.v === 'string' && cell.v.startsWith('Date(')) {
+    const parts = cell.v.replace('Date(','').replace(')','').split(',').map(Number);
+    return new Date(parts[0], parts[1], parts[2]);
+  }
+  return new Date(cell.v);
+}
+
+// ── Hoofd laadlogica ──────────────────────────────────────────
+let chart = null;
+
+async function load() {
+  try {
+    const res = await fetch(GVIZ_URL);
+    const text = await res.text();
+    const json = text.replace(/^[^(]+\(/, '').replace(/\);?\s*$/, '');
+    const obj  = JSON.parse(json);
+    const rows = obj.table.rows;
+
+    // Helper om celwaarde op te halen (B-kolom is index 1)
+    const getB = (rowIdx) => rows[rowIdx] && rows[rowIdx].c ? rows[rowIdx].c[1] : null;
+
+    // ── DATA MAPPING UIT TABBLAD FORECAST ──
+    const target    = cellNum(getB(1));  // B2: Target
+    const current   = cellNum(getB(2));  // B3: Totaal geïnvesteerd
+    const remaining = cellNum(getB(3));  // B4: Nog te funden
+    const metingen  = cellNum(getB(5));  // B6: Aantal metingen
+    
+    // Gemiddeldes (Stats Grid)
+    const avgTotal  = cellNum(getB(6));  // B7: Dag gemiddelde totaal
+    const ma30      = cellNum(getB(16)); // B17: MA 30 dagen
+    const ma7       = cellNum(getB(11)); // B12: MA 7 dagen
+    
+    // Subteksten (Toename)
+    const inc30     = cellNum(getB(14)); // B15: Toename laatste 30 dagen
+    const inc7      = cellNum(getB(9));  // B10: Toename laatste 7 dagen
+
+    // Prognose data (Dagen te gaan & Datums)
+    const p1days    = cellNum(getB(7));  // B8
+    const p1date    = cellStr(getB(8));  // B9
+    const p2days    = cellNum(getB(17)); // B18
+    const p2date    = cellStr(getB(18)); // B19
+    const p3days    = cellNum(getB(12)); // B13
+    const p3date    = cellStr(getB(13)); // B14
+
+    // ── UI UPDATEN ──
+    document.getElementById('currentAmount').textContent = fmt(current);
+    document.getElementById('remaining').textContent     = fmt(remaining);
+    document.getElementById('metingCount').textContent   = isNaN(metingen) ? '—' : metingen;
+    
+    // Progress Bar berekening (simpele % op basis van jouw B3 / B2)
+    const pct = ((current / target) * 100).toFixed(1);
+    document.getElementById('progressPct').textContent = pct + '%';
+    setTimeout(() => document.getElementById('progressBar').style.width = pct + '%', 300);
+
+    // Stats Grid
+    document.getElementById('avgTotal').textContent = fmt(avgTotal);
+    document.getElementById('ma30').textContent     = fmt(ma30);
+    document.getElementById('ma30Sub').textContent  = `Toename laatste 30 dagen: ${fmt(inc30)}`;
+    document.getElementById('ma7').textContent      = fmt(ma7);
+    document.getElementById('ma7Sub').textContent   = `Toename laatste 7 dagen: ${fmt(inc7)}`;
+
+    // Prognose Tabel
+    const badge = (d) => d < 365 ? '<span class="badge badge-green">optimistisch</span>' : '<span class="badge badge-warn">realistisch</span>';
+    
+    document.getElementById('p1avg').textContent  = fmt(avgTotal);
+    document.getElementById('p1days').textContent = Math.round(p1days);
+    document.getElementById('p1date').innerHTML   = p1date + badge(p1days);
+
+    document.getElementById('p2avg').textContent  = fmt(ma30);
+    document.getElementById('p2days').textContent = Math.round(p2days);
+    document.getElementById('p2date').innerHTML   = p2date + badge(p2days);
+
+    document.getElementById('p3avg').textContent  = fmt(ma7);
+    document.getElementById('p3days').textContent = Math.round(p3days);
+    document.getElementById('p3date').innerHTML   = p3date + badge(p3days);
+
+    // ── GRAFIEK DATA (vanaf rij 25 bijv. of waar de datareeks begint) ──
+    const chartData = [];
+    rows.forEach(row => {
+      if (row.c && row.c[0] && row.c[1]) {
+        const d = parseGvizDate(row.c[0]);
+        const v = cellNum(row.c[1]);
+        // Alleen rijen toevoegen die echt meetdata zijn (datum in A en groot getal in B)
+        if (d && !isNaN(d.getTime()) && v > 1000000000) {
+          chartData.push({ x: d, y: v });
+        }
+      }
+    });
+
+    if (chartData.length > 0) {
+        const lastUpdateDate = chartData[chartData.length - 1].x;
+        document.getElementById('lastUpdate').textContent = lastUpdateDate.toLocaleDateString('nl-NL', { day:'numeric', month:'long', year:'numeric' });
+        renderChart(chartData);
+    }
+
+    document.getElementById('loadingOverlay').classList.add('hidden');
+
+  } catch (e) {
+    console.error('Fout:', e);
+    document.getElementById('errorBox').style.display = 'block';
+    document.getElementById('loadingOverlay').classList.add('hidden');
+  }
+}
+
+function renderChart(data) {
+  const ctx = document.getElementById('fundingChart').getContext('2d');
+  if (chart) chart.destroy();
+  chart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: data.map(d => d.x.toLocaleDateString('nl-NL', {day:'numeric', month:'short'})),
+      datasets: [{
+        data: data.map(d => d.y),
+        borderColor: '#1a3a5c',
+        backgroundColor: 'rgba(26, 58, 92, 0.1)',
+        fill: true,
+        tension: 0.3,
+        pointRadius: 0
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { ticks: { callback: v => '€' + (v / 1e9).toFixed(2) + 'B' } }
+      }
+    }
+  });
+}
+
+load();
+</script>
