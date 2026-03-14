@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Wanneer is dat feestje?</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,700&family=Source+Sans+3:wght@300;400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans+Hebrew:wght@400;700&display=swap" rel="stylesheet">
 <style>
 :root {
 --bg:         #f0f3f7;
@@ -28,7 +28,7 @@
 body {
 background: var(--bg);
 color: var(--text);
-font-family: 'Source Sans 3', sans-serif;
+font-family: 'Open Sans Hebrew', sans-serif;
 font-size: 17px;
 line-height: 1.6;
 min-height: 100vh;
@@ -101,7 +101,7 @@ margin-bottom: 10px;
 }
 
 h1 {
-font-family: 'Playfair Display', serif;
+font-family: 'Open Sans Hebrew', sans-serif;
 font-size: clamp(2.2rem, 5vw, 3.4rem);
 color: var(--navy);
 line-height: 1.12;
@@ -188,8 +188,9 @@ margin-bottom: 6px;
 }
 
 .card-value {
-font-family: 'Playfair Display', serif;
+font-family: 'Open Sans Hebrew', sans-serif;
 font-size: 2.1rem;
+font-weight: 700;
 color: var(--navy);
 line-height: 1.1;
 }
@@ -215,15 +216,16 @@ gap: 12px;
 }
 
 .amount-big {
-font-family: 'Playfair Display', serif;
+font-family: 'Open Sans Hebrew', sans-serif;
 font-size: clamp(2.1rem, 4.5vw, 3.1rem);
+font-weight: 700;
 color: var(--navy);
 line-height: 1;
 }
 
 .target-block { text-align: right; }
 .target-block .label { font-size: 12px; text-transform: uppercase; letter-spacing: .14em; color: var(--muted); }
-.target-block .val { font-family: 'Playfair Display', serif; font-size: 1.5rem; color: var(--navy); }
+.target-block .val { font-family: 'Open Sans Hebrew', sans-serif; font-weight: 700; font-size: 1.5rem; color: var(--navy); }
 
 .progress-bar-outer {
 height: 10px;
@@ -286,8 +288,9 @@ padding-bottom: 8px;
 }
 
 .date-val {
-font-family: 'Playfair Display', serif;
+font-family: 'Open Sans Hebrew', sans-serif;
 font-size: 1.05rem;
+font-weight: 700;
 color: var(--text);
 }
 
@@ -296,7 +299,7 @@ display: inline-block;
 padding: 2px 9px;
 border-radius: 99px;
 font-size: 11px;
-font-family: 'Source Sans 3', sans-serif;
+font-family: 'Open Sans Hebrew', sans-serif;
 margin-left: 5px;
 vertical-align: middle;
 }
@@ -644,8 +647,8 @@ async function load() {
               borderWidth: 1,
               titleColor: '#a8c4dc',
               bodyColor: '#ffffff',
-              titleFont: { family: 'Source Sans 3', size: 12 },
-              bodyFont: { family: 'Playfair Display', size: 16 },
+              titleFont: { family: 'Open Sans Hebrew', size: 12 },
+              bodyFont: { family: 'Open Sans Hebrew', size: 16 },
               callbacks: {
                 label: c => '€ ' + c.parsed.y.toLocaleString('nl-NL')
               }
@@ -655,7 +658,7 @@ async function load() {
             x: {
               ticks: {
                 color: '#6e8aa3',
-                font: { family: 'Source Sans 3', size: 12 },
+                font: { family: 'Open Sans Hebrew', size: 12 },
                 maxTicksLimit: 12
               },
               grid: { color: '#d6dde820' },
@@ -664,7 +667,7 @@ async function load() {
             y: {
               ticks: {
                 color: '#6e8aa3',
-                font: { family: 'Source Sans 3', size: 12 },
+                font: { family: 'Open Sans Hebrew', size: 12 },
                 callback: v => '€' + (v / 1e9).toFixed(3) + 'B'
               },
               grid: { color: '#d6dde840' },
