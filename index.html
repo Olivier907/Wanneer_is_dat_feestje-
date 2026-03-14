@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Wanneer is dat feestje?</title>
-<link href="https://fonts.googleapis.com/css2?family=Open+Sans+Hebrew:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Hebrew:wght@400;700&display=swap" rel="stylesheet">
 <style>
 :root {
 --bg:         #f0f3f7;
@@ -28,7 +28,7 @@
 body {
 background: var(--bg);
 color: var(--text);
-font-family: 'Open Sans Hebrew', sans-serif;
+font-family: 'Noto Sans Hebrew', sans-serif;
 font-size: 17px;
 line-height: 1.6;
 min-height: 100vh;
@@ -101,7 +101,7 @@ margin-bottom: 10px;
 }
 
 h1 {
-font-family: 'Open Sans Hebrew', sans-serif;
+font-family: 'Noto Sans Hebrew', sans-serif;
 font-size: clamp(2.2rem, 5vw, 3.4rem);
 color: var(--navy);
 line-height: 1.12;
@@ -188,7 +188,7 @@ margin-bottom: 6px;
 }
 
 .card-value {
-font-family: 'Open Sans Hebrew', sans-serif;
+font-family: 'Noto Sans Hebrew', sans-serif;
 font-size: 2.1rem;
 font-weight: 700;
 color: var(--navy);
@@ -216,7 +216,7 @@ gap: 12px;
 }
 
 .amount-big {
-font-family: 'Open Sans Hebrew', sans-serif;
+font-family: 'Noto Sans Hebrew', sans-serif;
 font-size: clamp(2.1rem, 4.5vw, 3.1rem);
 font-weight: 700;
 color: var(--navy);
@@ -225,7 +225,7 @@ line-height: 1;
 
 .target-block { text-align: right; }
 .target-block .label { font-size: 12px; text-transform: uppercase; letter-spacing: .14em; color: var(--muted); }
-.target-block .val { font-family: 'Open Sans Hebrew', sans-serif; font-weight: 700; font-size: 1.5rem; color: var(--navy); }
+.target-block .val { font-family: 'Noto Sans Hebrew', sans-serif; font-weight: 700; font-size: 1.5rem; color: var(--navy); }
 
 .progress-bar-outer {
 height: 10px;
@@ -250,14 +250,14 @@ justify-content: space-between;
 font-size: 13.5px;
 color: var(--muted);
 }
-.progress-meta .pct { color: var(--navy); font-weight: 600; }
+.progress-meta .pct { color: var(--navy); font-weight: 700; }
 
 .section-header {
 font-size: 12px;
 letter-spacing: .2em;
 text-transform: uppercase;
 color: var(--navy);
-font-weight: 600;
+font-weight: 700;
 padding-bottom: 10px;
 border-bottom: 2px solid var(--orange);
 display: inline-block;
@@ -288,7 +288,7 @@ padding-bottom: 8px;
 }
 
 .date-val {
-font-family: 'Open Sans Hebrew', sans-serif;
+font-family: 'Noto Sans Hebrew', sans-serif;
 font-size: 1.05rem;
 font-weight: 700;
 color: var(--text);
@@ -299,7 +299,8 @@ display: inline-block;
 padding: 2px 9px;
 border-radius: 99px;
 font-size: 11px;
-font-family: 'Open Sans Hebrew', sans-serif;
+font-family: 'Noto Sans Hebrew', sans-serif;
+font-weight: 400;
 margin-left: 5px;
 vertical-align: middle;
 }
@@ -422,7 +423,7 @@ Bijgewerkt: <span id="lastUpdate">laden…</span> &nbsp;·&nbsp;
 <div class="date-val" id="p3date">—</div>
 </div>
 <div class="prognose-row">
-<div style="color:var(--orange); font-weight:600">Jeroen Ter Huurne</div>
+<div style="color:var(--orange); font-weight:700">Jeroen Ter Huurne</div>
 <div style="color:var(--muted)">—</div>
 <div style="color:var(--muted)">—</div>
 <div class="date-val">23 april 2027 <span class="badge badge-green">optimistisch</span></div>
@@ -586,7 +587,7 @@ async function load() {
     document.querySelector('.prognose-row:last-child .date-val').innerHTML =
       fJeroen + '<span class="badge badge-green">optimistisch</span>';
 
-    // ── Grafiek: data tabblad — kolom A = datum, kolom G = Toename G (index 6) ──
+    // ── Grafiek: data tabblad — kolom A = datum, kolom F = Geïnvesteerd (index 5) ──
     const chartData = [];
     if (resData.ok) {
       const dataObj = parseGviz(await resData.text());
@@ -647,8 +648,8 @@ async function load() {
               borderWidth: 1,
               titleColor: '#a8c4dc',
               bodyColor: '#ffffff',
-              titleFont: { family: 'Open Sans Hebrew', size: 12 },
-              bodyFont: { family: 'Open Sans Hebrew', size: 16 },
+              titleFont: { family: 'Noto Sans Hebrew', size: 12 },
+              bodyFont: { family: 'Noto Sans Hebrew', size: 16, weight: 'bold' },
               callbacks: {
                 label: c => '€ ' + c.parsed.y.toLocaleString('nl-NL')
               }
@@ -658,7 +659,7 @@ async function load() {
             x: {
               ticks: {
                 color: '#6e8aa3',
-                font: { family: 'Open Sans Hebrew', size: 12 },
+                font: { family: 'Noto Sans Hebrew', size: 12 },
                 maxTicksLimit: 12
               },
               grid: { color: '#d6dde820' },
@@ -667,7 +668,7 @@ async function load() {
             y: {
               ticks: {
                 color: '#6e8aa3',
-                font: { family: 'Open Sans Hebrew', size: 12 },
+                font: { family: 'Noto Sans Hebrew', size: 12 },
                 callback: v => '€' + (v / 1e9).toFixed(3) + 'B'
               },
               grid: { color: '#d6dde840' },
