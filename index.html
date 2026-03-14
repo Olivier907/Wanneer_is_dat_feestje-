@@ -461,27 +461,25 @@ Data live uit Google Sheets · elke paginalading actueel
 // ── Configuratie ──────────────────────────────────────────────
 const SHEET_ID      = '1-PqdNknNE3pZo8rc947TEG83pfc4cgxCQ2rs75QcM0s';
 const GID           = '1586153649';  // Forecast tabblad
-const GID_DATA      = '2028523272';  // Data tabblad (voor grafiek)
+const GID_DATA      = '2028523272';  // Data tabblad
 const GVIZ_URL      = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&gid=${GID}`;
 const GVIZ_URL_DATA = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&gid=${GID_DATA}`;
 
 // ── Helpers ───────────────────────────────────────────────────
 const MONTHS_SHORT = ['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'];
+const MONTHS_LONG  = ['januari','februari','maart','april','mei','juni','juli','augustus','september','oktober','november','december'];
 
-// Gebruik de formatted string uit de sheet (cel.f) voor weergave — exact zoals jij het hebt opgemaakt
 function cellFormatted(cell) {
   if (!cell) return '—';
   return (cell.f || cell.v || '').toString().trim() || '—';
 }
 
-// Ruwe numerieke waarde — alleen nodig voor progressbar % en badge berekening
 function cellNum(cell) {
   if (!cell) return NaN;
   if (typeof cell.v === 'number') return cell.v;
   return NaN;
 }
 
-// Parse gviz datum: "Date(2026,0,6)" → JS Date (voor de grafiek)
 function parseGvizDate(cell) {
   if (!cell) return null;
   if (typeof cell.v === 'string' && cell.v.startsWith('Date(')) {
@@ -514,7 +512,6 @@ function parseGviz(text) {
 
 async function load() {
   try {
-    // Haal Forecast én Data tabblad parallel op
     const [resForecast, resData] = await Promise.all([
       fetch(GVIZ_URL),
       fetch(GVIZ_URL_DATA)
@@ -524,41 +521,19 @@ async function load() {
     const forecast = parseGviz(await resForecast.text());
     const rows = forecast.table.rows;
 
-    // ── Forecast rijindexen (rij 0 t/m 18, daarna stoppen) ──
-    // Rij 0:  target                     B = € 2.000.000.000
-    // Rij 1:  huidig                     B = € 1.385.222.500
-    // Rij 2:  nog te funden              B = € 614.777.500
-    // Rij 3:  toename                    B = € 78.840.000
-    // Rij 4:  aantal dagen               B = 64
-    // Rij 5:  dag gemiddelde totaal      B = € 1.231.875
-    // Rij 6:  aantal dagen te gaan       B = 499
-    // Rij 7:  prognose totaal gemiddelde B = 22-jul-2027
-    // Rij 8:  toename laatste 7 dagen    B = € 8.750.000
-    // Rij 9:  aantal dagen (7)           B = 7
-    // Rij 10: dag gemiddelde MA7         B = € 1.250.000
-    // Rij 11: aantal dagen te gaan MA7   B = 492
-    // Rij 12: prognose MA7               B = 14-jul-2027
-    // Rij 13: toename laatste 30 dagen   B = € 23.816.000
-    // Rij 14: aantal dagen (30)          B = 30
-    // Rij 15: dag gemiddelde MA30        B = € 793.867
-    // Rij 16: aantal dagen te gaan MA30  B = 774
-    // Rij 17: prognose MA30              B = 22-apr-2028
-    // Rij 18: volgens Jeroen Ter Huurne  B = 23 april 2027
-
     const b = (i) => rows[i]?.c?.[1] ?? null;
 
     // Ruwe getallen — alleen voor progressbar % en badge kleur
-    const targetRaw  = cellNum(b(0));   // rij 0
-    const currentRaw = cellNum(b(1));   // rij 1
-    const p1daysRaw  = cellNum(b(6));   // rij 6 - dagen te gaan totaal
-    const p3daysRaw  = cellNum(b(11));  // rij 11 - dagen te gaan MA7
-    const p2daysRaw  = cellNum(b(16));  // rij 16 - dagen te gaan MA30
+    const targetRaw  = cellNum(b(0));
+    const currentRaw = cellNum(b(1));
+    const p1daysRaw  = cellNum(b(6));
+    const p3daysRaw  = cellNum(b(11));
+    const p2daysRaw  = cellNum(b(16));
 
-    // Formatted strings — exact uit jouw sheet, geen herberekening
-    const fTarget    = cellFormatted(b(0));
+    // Formatted strings — exact uit sheet
     const fCurrent   = cellFormatted(b(1));
     const fRemaining = cellFormatted(b(2));
-    const fMetingen  = cellFormatted(b(4));   // aantal dagen = metingen
+    const fMetingen  = cellFormatted(b(4));
     const fAvgTotal  = cellFormatted(b(5));
     const fP1days    = cellFormatted(b(6));
     const fP1date    = cellFormatted(b(7));
@@ -592,7 +567,7 @@ async function load() {
     document.getElementById('ma7').textContent         = fMa7;
     document.getElementById('ma7Sub').textContent      = `Toename laatste 7 dagen: ${fInc7}`;
 
-    // Prognose
+    // Prognose tabel
     document.getElementById('p1avg').textContent  = fAvgTotal;
     document.getElementById('p1days').textContent = fP1days;
     document.getElementById('p1date').innerHTML   = fP1date + badge(p1daysRaw);
@@ -605,33 +580,30 @@ async function load() {
     document.getElementById('p3days').textContent = fP3days;
     document.getElementById('p3date').innerHTML   = fP3date + badge(p3daysRaw);
 
-    // Jeroen rij (vast in HTML, maar datum uit sheet)
     document.querySelector('.prognose-row:last-child .date-val').innerHTML =
       fJeroen + '<span class="badge badge-green">optimistisch</span>';
 
-    // ── Grafiek: data tabblad — kolom A = datum, kolom B = bedrag (in duizenden × 25.000) ──
+    // ── Grafiek: data tabblad — kolom A = datum, kolom G = Toename G (index 6) ──
     const chartData = [];
     if (resData.ok) {
       const dataObj = parseGviz(await resData.text());
       for (const row of dataObj.table.rows) {
         if (!row.c) continue;
-        const dateCell = row.c[0];
-        const amtCell  = row.c[1];
+        const dateCell = row.c[0];   // kolom A: Datum
+        const amtCell  = row.c[6];   // kolom G: Toename G
         if (!dateCell || !amtCell) continue;
-        const d = parseGvizDate(dateCell);
+        const d   = parseGvizDate(dateCell);
         const raw = cellNum(amtCell);
         if (!d || isNaN(d.getTime()) || isNaN(raw)) continue;
-        // Bedragen staan in duizenden leningen × ~25.000 gemiddeld
-        // Ruwe waarde ~57.000–58.500 → vermenigvuldig met 25.000 voor echte bedragen
-        const amt = raw * 25000;
-        chartData.push({ date: d, amt });
+        chartData.push({ date: d, amt: raw });
       }
     }
     chartData.sort((a, b) => a.date - b.date);
 
-    // Bijgewerkt label (laatste datum uit grafiekdata of nu)
+    // Bijgewerkt label (laatste datum uit grafiekdata)
     const lastDate = chartData.length ? chartData[chartData.length - 1].date : new Date();
-    document.getElementById('lastUpdate').textContent = `${lastDate.getDate()} ${['januari','februari','maart','april','mei','juni','juli','augustus','september','oktober','november','december'][lastDate.getMonth()]} ${lastDate.getFullYear()}`;
+    document.getElementById('lastUpdate').textContent =
+      `${lastDate.getDate()} ${MONTHS_LONG[lastDate.getMonth()]} ${lastDate.getFullYear()}`;
 
     // ── Grafiek tekenen ──
     if (chartData.length >= 2) {
@@ -639,26 +611,20 @@ async function load() {
       const values = chartData.map(r => r.amt);
 
       if (chart) chart.destroy();
-      const ctx  = document.getElementById('fundingChart').getContext('2d');
-      const grad = ctx.createLinearGradient(0, 0, 0, 300);
-      grad.addColorStop(0, '#1a3a5c28');
-      grad.addColorStop(1, '#1a3a5c00');
+      const ctx = document.getElementById('fundingChart').getContext('2d');
 
       chart = new Chart(ctx, {
-        type: 'line',
+        type: 'bar',
         data: {
           labels,
           datasets: [{
             data: values,
+            backgroundColor: '#1a3a5c55',
             borderColor: '#1a3a5c',
-            backgroundColor: grad,
-            borderWidth: 2,
-            pointRadius: 0,
-            pointHoverRadius: 5,
-            pointHoverBackgroundColor: '#f5a623',
-            pointHoverBorderColor: '#1a3a5c',
-            fill: true,
-            tension: 0.35,
+            borderWidth: 1,
+            borderRadius: 3,
+            hoverBackgroundColor: '#f5a62399',
+            hoverBorderColor: '#f5a623',
           }]
         },
         options: {
@@ -674,20 +640,26 @@ async function load() {
               bodyColor: '#ffffff',
               titleFont: { family: 'Source Sans 3', size: 12 },
               bodyFont: { family: 'Playfair Display', size: 16 },
-              callbacks: { label: c => '€ ' + c.parsed.y.toLocaleString('nl-NL') }
+              callbacks: {
+                label: c => '€ ' + c.parsed.y.toLocaleString('nl-NL')
+              }
             }
           },
           scales: {
             x: {
-              ticks: { color: '#6e8aa3', font: { family: 'Source Sans 3', size: 12 }, maxTicksLimit: 10 },
-              grid: { color: '#d6dde820' },
+              ticks: {
+                color: '#6e8aa3',
+                font: { family: 'Source Sans 3', size: 12 },
+                maxTicksLimit: 12
+              },
+              grid: { display: false },
               border: { color: '#d6dde8' }
             },
             y: {
               ticks: {
                 color: '#6e8aa3',
                 font: { family: 'Source Sans 3', size: 12 },
-                callback: v => '€' + (v / 1e9).toFixed(3) + 'B'
+                callback: v => '€ ' + v.toLocaleString('nl-NL')
               },
               grid: { color: '#d6dde840' },
               border: { color: '#d6dde8' }
